@@ -1,0 +1,187 @@
+<!doctype html>
+
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Minimal Dark — หน้าเว็บธีมมืด</title>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#0b0f14;
+      --card:#0f1720;
+      --muted:#9aa6b2;
+      --accent:#7c5cff;
+      --glass: rgba(255,255,255,0.04);
+      --radius:14px;
+      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      background: radial-gradient(1200px 600px at 10% 10%, rgba(124,92,255,0.08), transparent),
+                  radial-gradient(800px 400px at 90% 90%, rgba(0,210,255,0.03), transparent),
+                  var(--bg);
+      color:#e6eef6;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      line-height:1.45;
+      padding:40px 20px;
+    }
+    .wrap{max-width:1100px;margin:0 auto}header{
+  display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:36px
+}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{
+  width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,var(--accent),#00d2ff);
+  display:grid;place-items:center;font-weight:800;color:#06121a;box-shadow:0 6px 20px rgba(0,0,0,0.6)
+}
+nav a{color:var(--muted);text-decoration:none;margin-left:18px;font-weight:600}
+nav a:hover{color:var(--accent)}
+
+.hero{
+  display:grid;grid-template-columns:1fr 380px;gap:28px;align-items:center;margin-bottom:28px
+}
+.card{
+  background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+  border-radius:var(--radius);padding:28px;box-shadow:0 6px 30px rgba(2,6,12,0.6);
+  border:1px solid rgba(255,255,255,0.03)
+}
+h1{margin:0;font-size:28px;letter-spacing:-0.4px}
+p.lead{color:var(--muted);margin-top:10px}
+.cta{display:inline-block;margin-top:18px;padding:12px 18px;border-radius:10px;background:linear-gradient(90deg,var(--accent),#00d2ff);color:#041018;font-weight:700;text-decoration:none}
+
+.preview{padding:18px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);}
+.mock{
+  height:220px;border-radius:8px;background:linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.01));
+  display:flex;flex-direction:column;justify-content:center;align-items:center;border:1px solid rgba(255,255,255,0.02)
+}
+.features{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;margin-top:20px}
+.feature{background:var(--card);padding:16px;border-radius:12px;border:1px solid rgba(255,255,255,0.02)}
+.muted{color:var(--muted);font-size:14px}
+
+footer{margin-top:36px;color:var(--muted);display:flex;justify-content:space-between;align-items:center;gap:12px}
+
+/* small screen */
+@media (max-width:880px){
+  .hero{grid-template-columns:1fr;}
+  nav a{margin-left:12px}
+}
+
+/* small details */
+.kbd{display:inline-block;padding:6px 8px;border-radius:8px;background:var(--glass);border:1px solid rgba(255,255,255,0.03);font-weight:600}
+.tag{font-size:12px;padding:6px 8px;border-radius:999px;background:rgba(124,92,255,0.12);color:var(--accent);display:inline-block}
+
+/* subtle animation */
+.logo{transform:translateY(0);transition:transform .36s ease}
+.logo:hover{transform:translateY(-4px)}
+
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="logo">DS</div>
+        <div>
+          <strong>DarkSimple</strong>
+          <div class="muted" style="font-size:13px">A minimal &amp; modern dark landing</div>
+        </div>
+      </div>
+      <nav>
+        <a href="#features">Features</a>
+        <a href="#about">About</a>
+        <a href="#contact" class="cta" style="background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted);padding:8px 12px;border-radius:10px">Contact</a>
+      </nav>
+    </header><section class="hero">
+  <div class="card">
+    <span class="tag">New</span>
+    <h1>หน้าเว็บธีมมืด — สวย เรียบ ใช้งานง่าย</h1>
+    <p class="lead">เทมเพลตหน้าเดียว เหมาะกับพอร์ตโฟลิโอ โปรดักต์เล็ก ๆ หรือหน้าลงข้อมูลทั่วไป ปรับแต่งง่ายด้วย CSS ตัวแปรเดียว</p>
+    <a href="#features" class="cta">ดูคุณสมบัติ</a>
+
+    <div class="features" style="margin-top:18px">
+      <div class="feature">
+        <strong>Responsive</strong>
+        <div class="muted">ออกแบบให้แสดงผลได้ดีบนมือถือและเดสก์ท็อป</div>
+      </div>
+      <div class="feature">
+        <strong>Dark-first</strong>
+        <div class="muted">ธีมมืดสบายตา เหมาะกับการใช้งานตอนกลางคืน</div>
+      </div>
+      <div class="feature">
+        <strong>Single file</strong>
+        <div class="muted">มี HTML + CSS + JS อยู่ในไฟล์เดียว แก้ได้ง่าย</div>
+      </div>
+    </div>
+  </div>
+
+  <aside class="card preview">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div class="muted">Preview</div>
+      <div class="muted"><span class="kbd">Ctrl</span> + <span class="kbd">K</span></div>
+    </div>
+    <div class="mock">
+      <div style="text-align:center">
+        <div style="font-weight:700;font-size:20px">Hello, visitor ✨</div>
+        <div class="muted" style="margin-top:8px">กราฟิกตัวอย่าง / ที่วางเนื้อหา</div>
+      </div>
+    </div>
+  </aside>
+</section>
+
+<section id="features" class="card" style="margin-bottom:18px">
+  <h3 style="margin-top:0">สิ่งที่รวมมาให้</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+    <div>
+      <strong>• Hero</strong>
+      <div class="muted">ส่วนหัวพร้อมคอล์ทูแอคชั่น</div>
+    </div>
+    <div>
+      <strong>• Cards</strong>
+      <div class="muted">บล็อกข้อมูลที่เรียบง่าย</div>
+    </div>
+    <div>
+      <strong>• Footer</strong>
+      <div class="muted">ข้อมูลติดต่อและลิงก์</div>
+    </div>
+    <div>
+      <strong>• Mobile-first</strong>
+      <div class="muted">ออกแบบให้อ่านง่ายบนมือถือ</div>
+    </div>
+  </div>
+</section>
+
+<section id="about" class="card" style="margin-bottom:18px">
+  <h3 style="margin-top:0">About</h3>
+  <p class="muted">นี่เป็นเทมเพลตเริ่มต้นที่เน้นความเรียบง่าย ปรับแต่งสีโดยการแก้ตัวแปร CSS ด้านบน (<code>--accent</code>, <code>--bg</code>) หรือแทนที่ฟอนต์ได้ตามต้องการ</p>
+</section>
+
+<section id="contact" class="card">
+  <h3 style="margin-top:0">Contact</h3>
+  <p class="muted">ส่งข้อความสั้น ๆ มาทางฟอร์มด้านล่าง (ตัวอย่างทำงานเฉพาะฝั่ง client)</p>
+  <form onsubmit="event.preventDefault();alert('ขอบคุณ! ข้อความถูกส่ง (ตัวอย่าง)')" style="display:grid;gap:10px;margin-top:12px">
+    <input placeholder="ชื่อ" style="padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:inherit" required>
+    <input type="email" placeholder="อีเมล" style="padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:inherit" required>
+    <textarea placeholder="ข้อความ" rows="4" style="padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:inherit"></textarea>
+    <button class="cta" style="margin-top:6px;width:140px">Send</button>
+  </form>
+</section>
+
+<footer>
+  <div>© 2025 DarkSimple — Built with ❤️</div>
+  <div class="muted">Need changes? Tell me what to tweak.</div>
+</footer>
+
+  </div>  <script>
+    // small keyboard hint: focus search with Ctrl+K (demo)
+    document.addEventListener('keydown', e => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k'){
+        e.preventDefault();
+        alert('Shortcut triggered — ทำตัวอย่าง Ctrl+K');
+      }
+    });
+  </script></body>
+</html>
