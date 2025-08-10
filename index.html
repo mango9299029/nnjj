@@ -3,164 +3,101 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>ไฟล์อัปโหลด (หลายไฟล์)</title>
+  <title>อัปโหลดไฟล์ (ธีมมืด)</title>
   <style>
-    body{font-family:system-ui,Segoe UI,Roboto,Arial;margin:24px}
-    .drop{border:2px dashed #bbb;padding:24px;text-align:center;border-radius:8px}
-    .drop.dragover{border-color:#4a90e2;background:#f0f8ff}
-    .file-list{margin-top:12px}
-    .file-item{display:flex;align-items:center;justify-content:space-between;padding:8px;border:1px solid #eee;border-radius:6px;margin:6px 0}
-    progress{width:200px;margin-right:12px}
-    button{margin-left:8px}
+    body { font-family: system-ui, sans-serif; margin: 0; background: #121212; color: #e0e0e0; }
+    header { padding: 20px; text-align: center; background: #1e1e1e; font-size: 1.5rem; border-bottom: 1px solid #333; }
+    main { padding: 20px; max-width: 800px; margin: auto; }
+    .drop { border: 2px dashed #555; padding: 40px; text-align: center; border-radius: 8px; background: #1e1e1e; cursor: pointer; transition: background 0.2s; }
+    .drop.dragover { border-color: #4a90e2; background: #2b2b2b; }
+    .btn { background: #4a90e2; border: none; padding: 10px 20px; color: white; border-radius: 4px; cursor: pointer; margin-right: 5px; }
+    .btn:hover { background: #357ab8; }
+    .file-list { margin-top: 12px; }
+    .file-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #1e1e1e; border: 1px solid #333; border-radius: 6px; margin-bottom: 6px; }
+    progress { width: 200px; margin-right: 10px; }
+    a { color: #4a90e2; text-decoration: none; }
+    a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
-  <h1>อัปโหลดไฟล์ (หลายไฟล์)</h1>
-  <div id="drop" class="drop">ลากไฟล์มาวางหรือคลิกเพื่อเลือกไฟล์</div>
-  <input id="fileInput" type="file" multiple style="display:none" />
+  <header>📂 อัปโหลดไฟล์ (ธีมมืด)</header>
+  <main>
+    <div id="drop" class="drop">ลากไฟล์มาวางหรือคลิกเพื่อเลือกไฟล์</div>
+    <input id="fileInput" type="file" multiple style="display:none" />
+    <div style="margin-top: 12px;">
+      <button class="btn" id="uploadBtn">อัปโหลด</button>
+      <button class="btn" id="refreshBtn">รีเฟรช</button>
+    </div>
+    <h2>รอดำเนินการ</h2>
+    <div id="pending" class="file-list"></div>
+    <h2>ไฟล์ที่เก็บไว้</h2>
+    <div id="stored" class="file-list"></div>
+  </main>
+<script>
+  const drop = document.getElementById('drop');
+  const fileInput = document.getElementById('fileInput');
+  const uploadBtn = document.getElementById('uploadBtn');
+  const pending = document.getElementById('pending');
+  const stored = document.getElementById('stored');
+  const refreshBtn = document.getElementById('refreshBtn');
+  let filesToUpload = [];
 
-  <div style="margin-top:12px">
-    <button id="uploadBtn">อัปโหลด</button>
-    <button id="refreshBtn">รีเฟรชรายการไฟล์</button>
-  </div>
+  function renderPending(){
+    pending.innerHTML = '';
+    filesToUpload.forEach((f, idx) => {
+      const el = document.createElement('div');
+      el.className = 'file-item';
+      el.innerHTML = `<span>${f.name} (${Math.round(f.size/1024)} KB)</span><progress id="prog-${idx}" value="0" max="100"></progress>`;
+      pending.appendChild(el);
+    });
+  }
 
-  <h2>การอัปโหลดที่รอดำเนินการ</h2>
-  <div id="pending" class="file-list"></div>
+  drop.addEventListener('click', ()=> fileInput.click());
+  fileInput.addEventListener('change', (e)=> addFiles(e.target.files));
+  drop.addEventListener('dragover', (e)=>{ e.preventDefault(); drop.classList.add('dragover'); });
+  drop.addEventListener('dragleave', ()=> drop.classList.remove('dragover'));
+  drop.addEventListener('drop', (e)=>{
+    e.preventDefault(); drop.classList.remove('dragover');
+    addFiles(e.dataTransfer.files);
+  });
 
-  <h2>ไฟล์ที่เซิร์ฟเวอร์เก็บไว้</h2>
-  <div id="stored" class="file-list"></div>
+  function addFiles(fileList){
+    for(const f of fileList){ filesToUpload.push(f); }
+    renderPending();
+  }
 
-  <script>
-    const drop = document.getElementById('drop');
-    const fileInput = document.getElementById('fileInput');
-    const uploadBtn = document.getElementById('uploadBtn');
-    const pending = document.getElementById('pending');
-    const stored = document.getElementById('stored');
-    const refreshBtn = document.getElementById('refreshBtn');
-
-    let filesToUpload = [];
-
-    function renderPending(){
-      pending.innerHTML = '';
-      filesToUpload.forEach((f, idx) => {
-        const el = document.createElement('div');
-        el.className = 'file-item';
-        el.innerHTML = `
-          <div style="display:flex;align-items:center">
-            <div style="width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.name}</div>
-            <div style="font-size:12px;color:#666;margin-left:8px">(${Math.round(f.size/1024)} KB)</div>
-          </div>
-          <div>
-            <progress id="prog-${idx}" value="0" max="100"></progress>
-            <button data-idx="${idx}" class="remove">ลบ</button>
-          </div>`;
-        pending.appendChild(el);
-      });
+  uploadBtn.addEventListener('click', async ()=>{
+    for(let i=0;i<filesToUpload.length;i++){
+      const file = filesToUpload[i];
+      const form = new FormData();
+      form.append('file', file);
+      const prog = document.getElementById('prog-'+i);
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', '/upload');
+      xhr.upload.onprogress = (ev) => {
+        if(ev.lengthComputable) prog.value = (ev.loaded/ev.total)*100;
+      };
+      xhr.onload = ()=> loadStoredFiles();
+      xhr.send(form);
     }
+    filesToUpload = [];
+    renderPending();
+  });
 
-    drop.addEventListener('click', ()=> fileInput.click());
-    fileInput.addEventListener('change', (e)=> addFiles(e.target.files));
-
-    drop.addEventListener('dragover', (e)=>{ e.preventDefault(); drop.classList.add('dragover'); });
-    drop.addEventListener('dragleave', ()=> drop.classList.remove('dragover'));
-    drop.addEventListener('drop', (e)=>{
-      e.preventDefault(); drop.classList.remove('dragover');
-      addFiles(e.dataTransfer.files);
+  async function loadStoredFiles(){
+    const res = await fetch('/files');
+    const list = await res.json();
+    stored.innerHTML = '';
+    list.forEach(item => {
+      const el = document.createElement('div');
+      el.className = 'file-item';
+      el.innerHTML = `<span>${item.originalName || item.filename} (${Math.round(item.size/1024)} KB)</span><a href="/files/${item.filename}" target="_blank">ดาวน์โหลด</a>`;
+      stored.appendChild(el);
     });
+  }
 
-    function addFiles(fileList){
-      for(const f of fileList){
-        filesToUpload.push(f);
-      }
-      renderPending();
-    }
-
-    pending.addEventListener('click', (e)=>{
-      if(e.target.classList.contains('remove')){
-        const idx = Number(e.target.dataset.idx);
-        filesToUpload.splice(idx,1);
-        renderPending();
-      }
-    });
-
-    uploadBtn.addEventListener('click', async ()=>{
-      if(filesToUpload.length === 0) return alert('ยังไม่มีไฟล์ให้ส่ง');
-      for(let i=0;i<filesToUpload.length;i++){
-        const file = filesToUpload[i];
-        const form = new FormData();
-        form.append('file', file);
-        // ถ้าต้องการ metadata เพิ่มเติม: form.append('meta', JSON.stringify({...}))
-
-        const prog = document.getElementById('prog-'+i);
-        try{
-          const xhr = new XMLHttpRequest();
-          xhr.open('POST', '/upload');
-          xhr.upload.onprogress = (ev) => {
-            if(ev.lengthComputable) {
-              const p = Math.round((ev.loaded/ev.total)*100);
-              prog.value = p;
-            }
-          };
-          await new Promise((res, rej)=>{
-            xhr.onload = ()=>{
-              if(xhr.status>=200 && xhr.status<300) res(xhr.responseText);
-              else rej(new Error(xhr.responseText || xhr.statusText));
-            };
-            xhr.onerror = ()=> rej(new Error('Network error'));
-            xhr.send(form);
-          });
-        }catch(err){
-          console.error('upload failed', err);
-          alert('อัปโหลดไฟล์ ' + file.name + ' ล้มเหลว');
-        }
-      }
-      filesToUpload = [];
-      renderPending();
-      await loadStoredFiles();
-    });
-
-    async function loadStoredFiles(){
-      stored.innerHTML = 'กำลังโหลด...';
-      try{
-        const res = await fetch('/files');
-        const list = await res.json(); // คาดว่าจะได้รับ [{filename, originalName, size, url}]
-        stored.innerHTML = '';
-        list.forEach(item => {
-          const el = document.createElement('div');
-          el.className = 'file-item';
-          el.innerHTML = `
-            <div style="display:flex;align-items:center">
-              <div style="width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${item.originalName || item.filename}</div>
-              <div style="font-size:12px;color:#666;margin-left:8px">(${Math.round(item.size/1024)} KB)</div>
-            </div>
-            <div>
-              <a href="/files/${encodeURIComponent(item.filename)}" target="_blank">ดาวน์โหลด</a>
-              <button data-fn="${item.filename}" class="del">ลบ</button>
-            </div>`;
-          stored.appendChild(el);
-        });
-      }catch(err){
-        stored.innerHTML = 'โหลดรายการไฟล์ล้มเหลว';
-        console.error(err);
-      }
-    }
-
-    stored.addEventListener('click', async (e)=>{
-      if(e.target.classList.contains('del')){
-        const fn = e.target.dataset.fn;
-        if(!confirm('ลบไฟล์นี้หรือไม่?')) return;
-        try{
-          const res = await fetch('/files/' + encodeURIComponent(fn), { method: 'DELETE' });
-          if(res.ok) loadStoredFiles();
-          else alert('ลบไม่สำเร็จ');
-        }catch(err){ console.error(err); alert('ล้มเหลว'); }
-      }
-    });
-
-    refreshBtn.addEventListener('click', loadStoredFiles);
-
-    // โหลดครั้งแรก
-    loadStoredFiles();
-  </script>
+  refreshBtn.addEventListener('click', loadStoredFiles);
+  loadStoredFiles();
+</script>
 </body>
 </html>
