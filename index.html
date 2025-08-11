@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>เครื่องคิดเลขธีมมืดสวยหรู</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet" />
+<title>เครื่องคิดเลขธีมมืด พร้อมประวัติ</title>
 <style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap');
   :root {
     --bg-dark: #121217;
     --panel-dark: #1e1f29;
@@ -26,8 +26,9 @@
     color: var(--text-light);
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
     min-height: 100vh;
+    padding: 20px;
     user-select: none;
   }
   .container {
@@ -35,7 +36,6 @@
     gap: 30px;
     max-width: 900px;
     width: 100%;
-    padding: 20px;
   }
   .calculator {
     background: var(--panel-dark);
@@ -288,9 +288,6 @@
       <div class="history-list" id="historyList" tabindex="0"></div>
       <div class="controls">
         <button type="button" id="clearHistory">ลบทั้งหมด</button>
-        <button type="button" id="exportHistory">ส่งออก</button>
-        <button type="button" id="importHistory">นำเข้า</button>
-        <input type="file" id="importFile" accept="application/json" style="display:none" />
       </div>
     </aside>
   </div>
@@ -301,17 +298,13 @@
   const historyList = document.getElementById('historyList');
   const searchInput = document.getElementById('search');
   const clearHistoryBtn = document.getElementById('clearHistory');
-  const exportHistoryBtn = document.getElementById('exportHistory');
-  const importHistoryBtn = document.getElementById('importHistory');
-  const importFileInput = document.getElementById('importFile');
 
   let expression = '';
-  let history = JSON.parse(localStorage.getItem('darkCalcHistory') || '[]');
+  let history = JSON.parse(localStorage.getItem('calculatorHistory') || '[]');
 
-  // คำนวณอย่างปลอดภัย
   function safeEval(expr) {
     try {
-      let e = expr.replace(/×/g, '*').replace(/÷/g, '/').replace(/−/g, '-');
+      let e = expr.replace(/÷/g, '/').replace(/×/g, '*').replace(/−/g, '-');
       e = e.replace(/(\d+(\.\d+)?)%/g, '($1/100)');
       if (!/^[0-9+\-*/().% ]+$/.test(e)) return null;
       const fn = new Function('return ' + e);
@@ -352,6 +345,7 @@
       const actionsDiv = document.createElement('div');
       actionsDiv.className = 'history-actions';
 
+      // ปุ่ม ใช้สูตรนี้
       const useBtn = document.createElement('button');
       useBtn.textContent = 'ใช้';
       useBtn.title = 'ใช้สูตรนี้';
@@ -360,32 +354,18 @@
         updateDisplay();
       };
 
-      const recalcBtn = document.createElement('button');
-      recalcBtn.textContent = 'คำนวณใหม่';
-      recalcBtn.title = 'คำนวณสูตรนี้อีกครั้ง';
-      recalcBtn.onclick = () => {
-        const newRes = safeEval(item.expr);
-        if (newRes !== null) {
-          item.res = newRes;
-          saveHistory();
-          renderHistory(searchInput.value);
-          expression = newRes;
-          updateDisplay();
-        } else {
-          alert('สูตรไม่ถูกต้อง ไม่สามารถคำนวณใหม่ได้');
-        }
-      };
-
+      // ปุ่ม คัดลอกผลลัพธ์
       const copyBtn = document.createElement('button');
       copyBtn.textContent = 'คัดลอก';
       copyBtn.title = 'คัดลอกผลลัพธ์';
       copyBtn.onclick = () => {
         navigator.clipboard.writeText(item.res).then(() => {
           copyBtn.textContent = '✓';
-          setTimeout(() => copyBtn.textContent = 'คัดลอก', 1000);
+          setTimeout(() => (copyBtn.textContent = 'คัดลอก'), 1000);
         });
       };
 
+      // ปุ่ม ลบรายการนี้
       const delBtn = document.createElement('button');
       delBtn.textContent = 'ลบ';
       delBtn.title = 'ลบรายการนี้';
@@ -398,7 +378,6 @@
       };
 
       actionsDiv.appendChild(useBtn);
-      actionsDiv.appendChild(recalcBtn);
       actionsDiv.appendChild(copyBtn);
       actionsDiv.appendChild(delBtn);
 
@@ -410,11 +389,11 @@
   }
 
   function saveHistory() {
-    localStorage.setItem('darkCalcHistory', JSON.stringify(history));
+    localStorage.setItem('calculatorHistory', JSON.stringify(history));
   }
 
   function addToHistory(expr, res) {
-    if(expr.trim() === '' || res === null) return;
+    if (expr.trim() === '' || res === null) return;
     history.unshift({ expr, res });
     if (history.length > 300) history.pop();
     saveHistory();
@@ -435,7 +414,7 @@
 
     if (!action) return;
 
-    switch(action) {
+    switch (action) {
       case 'clear':
         expression = '';
         updateDisplay();
@@ -483,25 +462,10 @@
     }
   });
 
-  exportHistoryBtn.addEventListener('click', () => {
-    const dataStr = JSON.stringify(history, null, 2);
-    const blob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'calculator_history.json';
-    a.click();
-    URL.revokeObjectURL(url);
-  });
-
-  importHistoryBtn.addEventListener('click', () => {
-    importFileInput.click();
-  });
-
-  importFileInput.addEventListener('change', e => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      try {
-        const
+  // โหลดประวัติตอนเริ่มต้น
+  renderHistory();
+  updateDisplay();
+})();
+</script>
+</body>
+</html>
