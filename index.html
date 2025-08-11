@@ -185,6 +185,7 @@
     border-radius: 12px;
     color: var(--accent);
     transition: background 0.3s ease, color 0.3s ease;
+    cursor: pointer;
   }
   .history-actions button:hover {
     background: var(--accent);
@@ -307,7 +308,7 @@
     let expression = '';
     let history = JSON.parse(localStorage.getItem('darkCalcHistory') || '[]');
 
-    // Helpers
+    // ฟังก์ชันคำนวณอย่างปลอดภัย
     const safeEval = (expr) => {
       try {
         let e = expr.replace(/×/g, '*').replace(/÷/g, '/').replace(/−/g, '-');
@@ -352,7 +353,7 @@
         actionsDiv.className = 'history-actions';
 
         const useBtn = document.createElement('button');
-        useBtn.textContent = 'Use';
+        useBtn.textContent = 'ใช้';
         useBtn.title = 'ใช้สูตรนี้';
         useBtn.onclick = () => {
           expression = item.expr;
@@ -360,8 +361,8 @@
         };
 
         const recalcBtn = document.createElement('button');
-        recalcBtn.textContent = 'Recalc';
-        recalcBtn.title = 'คำนวณใหม่';
+        recalcBtn.textContent = 'คำนวณใหม่';
+        recalcBtn.title = 'คำนวณสูตรนี้อีกครั้ง';
         recalcBtn.onclick = () => {
           const newRes = safeEval(item.expr);
           if (newRes !== null) {
@@ -370,25 +371,30 @@
             renderHistory(searchInput.value);
             expression = newRes;
             updateDisplay();
+          } else {
+            alert('สูตรไม่ถูกต้อง ไม่สามารถคำนวณใหม่ได้');
           }
         };
 
         const copyBtn = document.createElement('button');
-        copyBtn.textContent = 'Copy';
+        copyBtn.textContent = 'คัดลอก';
         copyBtn.title = 'คัดลอกผลลัพธ์';
         copyBtn.onclick = () => {
-          navigator.clipboard.writeText(item.res);
-          copyBtn.textContent = '✓';
-          setTimeout(() => copyBtn.textContent = 'Copy', 1000);
+          navigator.clipboard.writeText(item.res).then(() => {
+            copyBtn.textContent = '✓';
+            setTimeout(() => copyBtn.textContent = 'คัดลอก', 1000);
+          });
         };
 
         const delBtn = document.createElement('button');
-        delBtn.textContent = 'Del';
+        delBtn.textContent = 'ลบ';
         delBtn.title = 'ลบรายการนี้';
         delBtn.onclick = () => {
-          history = history.filter(h => h !== item);
-          saveHistory();
-          renderHistory(searchInput.value);
+          if(confirm('ลบรายการนี้หรือไม่?')) {
+            history = history.filter(h => h !== item);
+            saveHistory();
+            renderHistory(searchInput.value);
+          }
         };
 
         actionsDiv.appendChild(useBtn);
@@ -414,7 +420,7 @@
       renderHistory(searchInput.value);
     };
 
-    // Event handlers
+    // จัดการปุ่มกด
     document.querySelector('.buttons').addEventListener('click', e => {
       if (e.target.tagName !== 'BUTTON') return;
 
@@ -422,6 +428,7 @@
       const value = e.target.getAttribute('data-value');
 
       if (value) {
+        // กรองปุ่มเลขและจุด
         expression += value;
         updateDisplay();
         return;
@@ -429,48 +436,50 @@
 
       if (!action) return;
 
-      if (action === 'clear') {
-        expression = '';
-        updateDisplay();
-        return;
-      }
-      if (action === 'backspace') {
-        expression = expression.slice(0, -1);
-        updateDisplay();
-        return;
-      }
-      if (action === 'percent') {
-        expression += '%';
-        updateDisplay();
-        return;
-      }
-      if (action === 'equals') {
-        const res = safeEval(expression);
-        if (res === null) {
-          display.textContent = 'Error';
+      switch(action) {
+        case 'clear':
           expression = '';
-          return;
-        }
-        display.textContent = res;
-        addToHistory(expression, res);
-        expression = '';
-      }
-      if (action === 'operator') {
-        // Prevent operators first or duplicate operators
-        if (expression === '') return;
-        if (/[+\-*/.]$/.test(expression)) {
-          expression = expression.slice(0, -1) + value;
-        } else {
-          expression += value;
-        }
-        updateDisplay();
+          updateDisplay();
+          break;
+        case 'backspace':
+          expression = expression.slice(0, -1);
+          updateDisplay();
+          break;
+        case 'percent':
+          expression += '%';
+          updateDisplay();
+          break;
+        case 'equals':
+          const res = safeEval(expression);
+          if (res === null) {
+            display.textContent = 'Error';
+            expression = '';
+            return;
+          }
+          display.textContent = res;
+          addToHistory(expression, res);
+          expression = '';
+          break;
+        case 'operator':
+          // ไม่ให้ขึ้นต้นด้วยโอเปอร์เรเตอร์
+          if (expression === '') return;
+          // แทนที่โอเปอร์เรเตอร์ตัวสุดท้ายถาซ้อนกัน
+          if (/[+\-*/.]$/.test(expression)) {
+            expression = expression.slice(0, -1) + value;
+          } else {
+            expression += value;
+          }
+          updateDisplay();
+          break;
       }
     });
 
+    // ค้นหาประวัติ
     searchInput.addEventListener('input', e => {
       renderHistory(e.target.value);
     });
 
+    // ลบประวัติทั้งหมด
     clearHistoryBtn.addEventListener('click', () => {
       if (confirm('ต้องการลบประวัติทั้งหมดหรือไม่?')) {
         history = [];
@@ -479,6 +488,7 @@
       }
     });
 
+    // ส่งออกประวัติเป็นไฟล์ JSON
     exportHistoryBtn.addEventListener('click', () => {
       const dataStr = JSON.stringify(history, null, 2);
       const blob = new Blob([dataStr], { type: 'application/json' });
@@ -490,23 +500,6 @@
       URL.revokeObjectURL(url);
     });
 
+    // นำเข้าไฟล์ JSON
     importHistoryBtn.addEventListener('click', () => {
-      importFileInput.click();
-    });
-
-    importFileInput.addEventListener('change', e => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = () => {
-        try {
-          const imported = JSON.parse(reader.result);
-          if (!Array.isArray(imported)) throw new Error();
-          history = imported.concat(history).slice(0, 300);
-          saveHistory();
-          renderHistory();
-          alert('นำเข้าประวัติเรียบร้อยแล้ว');
-        } catch {
-          alert('ไฟล์นำเข้าไม่ถูกต้อง');
-        }
-      };
+      importFileInput.click
