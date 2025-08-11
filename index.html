@@ -1,86 +1,273 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-<meta charset="UTF-8">
-<title>อัปโหลดไฟล์</title>
-<style>
-    body {
-        background-color: #121212;
-        color: #fff;
-        font-family: sans-serif;
-        padding: 20px;
-    }
-    h1 {
-        text-align: center;
-    }
-    .upload-container {
-        max-width: 500px;
-        margin: auto;
-        background: #1e1e1e;
-        padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0 0 15px rgba(0,0,0,0.5);
-    }
-    input[type="file"] {
-        width: 100%;
-        padding: 10px;
-        background: #2b2b2b;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        margin-bottom: 15px;
-    }
-    button {
-        background: #2196f3;
-        color: white;
-        border: none;
-        padding: 10px 20px;
-        border-radius: 5px;
-        cursor: pointer;
-    }
-    button:hover {
-        background: #1976d2;
-    }
-    ul {
-        list-style: none;
-        padding: 0;
-        margin-top: 15px;
-    }
-    li {
-        background: #2b2b2b;
-        padding: 8px;
-        margin: 5px 0;
-        border-radius: 5px;
-        word-break: break-word;
-    }
-</style>
-</head>
-<body>
+import React, { useEffect, useState, useRef } from "react"; import { motion } from "framer-motion";
 
-<h1>อัปโหลดไฟล์ (ธีมมืด)</h1>
-<div class="upload-container">
-    <input type="file" id="fileInput" multiple>
-    <button onclick="uploadFiles()">อัปโหลด</button>
-    <ul id="fileList"></ul>
+// MathGame_DarkTheme.jsx // Single-file React component for a dark-themed, multi-level math game. // Usage: drop into a React app that has TailwindCSS & framer-motion installed. // - npm install framer-motion // - Tailwind must be configured in your project.
+
+export default function MathGame() { // levels configuration (can be extended) const LEVELS = [ { id: 1, name: "Easy (+)", ops: ["+"], count: 10, range: [0, 10], time: 0 }, { id: 2, name: "Medium (+, -)", ops: ["+", "-"], count: 12, range: [0, 20], time: 0 }, { id: 3, name: "Hard (×)", ops: [""], count: 15, range: [0, 12], time: 30 }, { id: 4, name: "Expert (mixed)", ops: ["+", "-", "", "/"], count: 20, range: [0, 20], time: 45 }, ];
+
+const [levelIndex, setLevelIndex] = useState(0); const [question, setQuestion] = useState(null); const [answer, setAnswer] = useState(""); const [score, setScore] = useState(0); const [asked, setAsked] = useState(0); const [correctStreak, setCorrectStreak] = useState(0); const [lives, setLives] = useState(3); const [showResult, setShowResult] = useState(null); // true/false for last answer const [timeLeft, setTimeLeft] = useState(0); const timerRef = useRef(null); const [gameOver, setGameOver] = useState(false);
+
+// helper: random int const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+
+// generate a new question based on current level const makeQuestion = (lvl) => { const ops = lvl.ops; const op = ops[rand(0, ops.length - 1)]; const [min, max] = lvl.range;
+
+let a = rand(min, max);
+let b = rand(min, max);
+
+// avoid division by zero and make division clean sometimes
+if (op === "/") {
+  b = rand(1, Math.max(1, max));
+  a = b * rand(0, Math.max(1, Math.floor(max / Math.max(1, b))));
+}
+
+let expression = `${a} ${op} ${b}`;
+// compute correct answer (allow float for division)
+let correct = 0;
+switch (op) {
+  case "+":
+    correct = a + b; break;
+  case "-":
+    correct = a - b; break;
+  case "*":
+    correct = a * b; break;
+  case "/":
+    correct = b === 0 ? Infinity : +(a / b).toFixed(2); break;
+  default:
+    correct = a + b;
+}
+
+return { expression, correct };
+
+};
+
+// start level const startLevel = (index) => { const lvl = LEVELS[index]; setLevelIndex(index); setScore(0); setAsked(0); setCorrectStreak(0); setLives(3); setGameOver(false); setShowResult(null); setTimeLeft(lvl.time || 0); const q = makeQuestion(lvl); setQuestion(q); };
+
+// initialise first level on mount useEffect(() => { startLevel(0); // eslint-disable-next-line react-hooks/exhaustive-deps }, []);
+
+// manage timer if level has time limit useEffect(() => { const lvl = LEVELS[levelIndex]; if (!lvl || !lvl.time) return;
+
+clearInterval(timerRef.current);
+setTimeLeft(lvl.time);
+timerRef.current = setInterval(() => {
+  setTimeLeft((t) => {
+    if (t <= 1) {
+      clearInterval(timerRef.current);
+      // time's up - penalize
+      setLives((l) => Math.max(0, l - 1));
+      setShowResult(false);
+      setCorrectStreak(0);
+      // next question
+      setTimeout(() => {
+        if (!gameOver) nextQuestion();
+      }, 700);
+      return 0;
+    }
+    return t - 1;
+  });
+}, 1000);
+
+return () => clearInterval(timerRef.current);
+// eslint-disable-next-line react-hooks/exhaustive-deps
+
+}, [levelIndex]);
+
+// check game over useEffect(() => { if (lives <= 0) { setGameOver(true); clearInterval(timerRef.current); } }, [lives]);
+
+const submit = (e) => { e && e.preventDefault(); if (!question) return; const lvl = LEVELS[levelIndex];
+
+// parse answer; accept small float differences for division
+let parsed = parseFloat(answer);
+if (Number.isNaN(parsed)) parsed = null;
+
+const correct = question.correct;
+const isCorrect = parsed === null ? false : Math.abs(parsed - correct) < (Math.abs(correct) < 1 ? 0.01 : 0.001);
+
+if (isCorrect) {
+  setScore((s) => s + Math.max(1, Math.round(10 + correct / 2 + correctStreak)));
+  setCorrectStreak((c) => c + 1);
+  setShowResult(true);
+} else {
+  setLives((l) => Math.max(0, l - 1));
+  setCorrectStreak(0);
+  setShowResult(false);
+}
+
+setAsked((a) => a + 1);
+
+// prepare next question
+setTimeout(() => {
+  nextQuestion();
+}, 700);
+
+};
+
+const nextQuestion = () => { const lvl = LEVELS[levelIndex]; if (!lvl) return; // If asked enough, complete level if (asked + 1 >= lvl.count) { // auto advance if any life remains if (levelIndex + 1 < LEVELS.length && lives > 0) { startLevel(levelIndex + 1); return; } else { setGameOver(true); return; } }
+
+const q = makeQuestion(lvl);
+setQuestion(q);
+setAnswer("");
+setShowResult(null);
+// reset timer for timed levels
+if (lvl.time) {
+  setTimeLeft(lvl.time);
+  clearInterval(timerRef.current);
+  timerRef.current = setInterval(() => {
+    setTimeLeft((t) => Math.max(0, t - 1));
+  }, 1000);
+}
+
+};
+
+const restart = () => { startLevel(0); };
+
+// small UI helpers const progressPercent = () => { const lvl = LEVELS[levelIndex]; return Math.min(100, Math.round((asked / (lvl ? lvl.count : 1)) * 100)); };
+
+return ( <div className="min-h-screen bg-gradient-to-b from-gray-900 via-black to-gray-900 text-gray-100 flex items-center justify-center p-4"> <div className="w-full max-w-4xl"> <div className="flex items-center justify-between mb-6"> <div> <h1 className="text-3xl font-extrabold tracking-tight">Math Forge</h1> <p className="text-sm text-gray-400">Dark-themed progressive math game • Sharpen your skills</p> </div>
+
+<div className="flex items-center gap-3">
+        <div className="text-right">
+          <div className="text-xs text-gray-400">Level</div>
+          <div className="text-lg font-medium">{LEVELS[levelIndex].name}</div>
+        </div>
+
+        <div className="bg-gray-800/60 p-3 rounded-2xl text-center">
+          <div className="text-xs text-gray-400">Score</div>
+          <div className="text-lg font-semibold">{score}</div>
+        </div>
+
+        <div className="bg-gray-800/60 p-3 rounded-2xl text-center">
+          <div className="text-xs text-gray-400">Lives</div>
+          <div className="text-lg font-semibold">{lives}</div>
+        </div>
+      </div>
+    </div>
+
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-gradient-to-br from-gray-800/60 to-black p-6 rounded-3xl shadow-2xl"
+    >
+      <div className="flex flex-col md:flex-row gap-6">
+        <div className="flex-1">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <div className="text-xs text-gray-400">Question</div>
+              <div className="text-2xl font-bold tracking-tight">{question ? question.expression : "—"}</div>
+            </div>
+
+            <div className="text-right">
+              {LEVELS[levelIndex].time ? (
+                <div className="text-sm text-gray-300">Time left</div>
+              ) : (
+                <div className="text-sm text-gray-300">Progress</div>
+              )}
+              <div className="text-lg font-medium">{LEVELS[levelIndex].time ? `${timeLeft}s` : `${asked}/${LEVELS[levelIndex].count}`}</div>
+            </div>
+          </div>
+
+          <form onSubmit={submit} className="flex gap-3 items-center">
+            <input
+              autoFocus
+              className="flex-1 bg-gray-900/60 border border-gray-800 rounded-xl p-3 text-lg outline-none placeholder-gray-500"
+              placeholder="Type your answer (numbers only)"
+              value={answer}
+              onChange={(e) => setAnswer(e.target.value)}
+            />
+            <button type="submit" className="px-5 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 transition-shadow shadow-lg font-semibold">
+              Submit
+            </button>
+          </form>
+
+          <div className="mt-4 flex items-center gap-3">
+            <div className="flex-1 bg-gray-900/50 p-3 rounded-xl">
+              <div className="text-xs text-gray-400">Streak</div>
+              <div className="text-lg font-semibold">{correctStreak}</div>
+            </div>
+
+            <div className="w-56 bg-gray-900/40 rounded-xl p-2">
+              <div className="text-xs text-gray-400">Level progress</div>
+              <div className="h-2 bg-gray-800 rounded-full mt-2 overflow-hidden">
+                <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${progressPercent()}%` }} />
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-4 h-12">
+            {showResult !== null && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className={`inline-block px-4 py-2 rounded-lg font-semibold ${showResult ? "bg-emerald-600/90" : "bg-rose-600/90"}`}
+              >
+                {showResult ? "Correct!" : `Wrong — answer: ${question.correct}`}
+              </motion.div>
+            )}
+          </div>
+        </div>
+
+        <div className="w-80 md:w-64 flex-shrink-0">
+          <div className="bg-gray-900/50 p-4 rounded-2xl">
+            <div className="text-xs text-gray-400">Level Selector</div>
+            <div className="mt-3 flex flex-col gap-2">
+              {LEVELS.map((lvl, idx) => (
+                <button
+                  key={lvl.id}
+                  onClick={() => startLevel(idx)}
+                  className={`text-left p-3 rounded-xl transition ${idx === levelIndex ? "bg-indigo-600/40 border border-indigo-500" : "bg-gray-800/40 hover:bg-gray-800/60"}`}
+                >
+                  <div className="font-medium">{lvl.name}</div>
+                  <div className="text-xs text-gray-400">{lvl.count} questions • {lvl.ops.join(" ")}{lvl.time ? ` • ${lvl.time}s each` : ""}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-4 bg-gray-900/40 p-4 rounded-2xl">
+            <div className="text-xs text-gray-400">Quick Stats</div>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              <div className="p-2 bg-gray-900/60 rounded-lg">
+                <div className="text-xs text-gray-400">Asked</div>
+                <div className="font-semibold">{asked}</div>
+              </div>
+              <div className="p-2 bg-gray-900/60 rounded-lg">
+                <div className="text-xs text-gray-400">Score</div>
+                <div className="font-semibold">{score}</div>
+              </div>
+              <div className="p-2 bg-gray-900/60 rounded-lg">
+                <div className="text-xs text-gray-400">Lives</div>
+                <div className="font-semibold">{lives}</div>
+              </div>
+              <div className="p-2 bg-gray-900/60 rounded-lg">
+                <div className="text-xs text-gray-400">Level</div>
+                <div className="font-semibold">{LEVELS[levelIndex].name}</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-4 text-center">
+            <button onClick={() => setShowResult(null) || nextQuestion()} className="w-full py-2 rounded-xl bg-gray-800/50 hover:bg-gray-800/70">Skip</button>
+            <button onClick={restart} className="w-full mt-3 py-2 rounded-xl bg-emerald-600/80 hover:bg-emerald-600/90">Restart</button>
+          </div>
+        </div>
+      </div>
+
+      {/* Game over overlay */}
+      {gameOver && (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 flex items-center justify-center bg-black/60">
+          <div className="bg-gray-900 p-8 rounded-3xl text-center w-full max-w-lg">
+            <h2 className="text-2xl font-bold mb-2">Game Over</h2>
+            <p className="text-gray-400 mb-4">Final score: <span className="font-semibold">{score}</span></p>
+            <div className="flex gap-3 justify-center">
+              <button onClick={restart} className="px-6 py-3 rounded-xl bg-indigo-600">Play Again</button>
+              <button onClick={() => { setGameOver(false); }} className="px-6 py-3 rounded-xl bg-gray-800/60">Close</button>
+            </div>
+          </div>
+        </motion.div>
+      )}
+    </motion.div>
+
+    <footer className="mt-6 text-center text-xs text-gray-500">Tip: try timed levels to push your reflexes — accuracy > speed for higher scores.</footer>
+  </div>
 </div>
 
-<script>
-function uploadFiles() {
-    const files = document.getElementById('fileInput').files;
-    if (files.length === 0) {
-        alert("กรุณาเลือกไฟล์ก่อน");
-        return;
-    }
-    let list = document.getElementById('fileList');
-    list.innerHTML = "";
+); }
 
-    for (let i = 0; i < files.length; i++) {
-        let li = document.createElement('li');
-        li.textContent = files[i].name + " ✅";
-        list.appendChild(li);
-    }
-}
-</script>
-
-</body>
-</html>
