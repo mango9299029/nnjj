@@ -1,273 +1,285 @@
-import React, { useEffect, useState, useRef } from "react"; import { motion } from "framer-motion";
+<!doctype html>
 
-// MathGame_DarkTheme.jsx // Single-file React component for a dark-themed, multi-level math game. // Usage: drop into a React app that has TailwindCSS & framer-motion installed. // - npm install framer-motion // - Tailwind must be configured in your project.
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>DarkCalc — เครื่องคิดเลขธีมมืดพร้อมประวัติ</title>
+  <style>
+    :root{--bg:#0b0f13;--panel:#0f1720;--muted:#9aa4ae;--accent:#6b8cff;--glass:rgba(255,255,255,0.03)}
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial}
+    body{background:linear-gradient(180deg,#02040a 0%, #071018 100%);color:#e6eef8;display:flex;align-items:center;justify-content:center;padding:28px}
+    .app{width:980px;max-width:98%;display:grid;grid-template-columns:1fr 360px;gap:20px}
+    .card{background:linear-gradient(180deg,var(--panel), #07101a);border-radius:14px;padding:18px;box-shadow:0 6px 30px rgba(2,6,23,0.6);border:1px solid rgba(255,255,255,0.03)}/* Calculator area */
+.calc{display:flex;flex-direction:column;gap:12px}
+.screen{background:var(--glass);padding:14px;border-radius:12px;min-height:92px;display:flex;flex-direction:column;justify-content:center}
+.expr{color:var(--muted);font-size:15px;min-height:20px;word-break:break-all}
+.result{font-size:28px;font-weight:700;letter-spacing:0.4px}
 
-export default function MathGame() { // levels configuration (can be extended) const LEVELS = [ { id: 1, name: "Easy (+)", ops: ["+"], count: 10, range: [0, 10], time: 0 }, { id: 2, name: "Medium (+, -)", ops: ["+", "-"], count: 12, range: [0, 20], time: 0 }, { id: 3, name: "Hard (×)", ops: [""], count: 15, range: [0, 12], time: 30 }, { id: 4, name: "Expert (mixed)", ops: ["+", "-", "", "/"], count: 20, range: [0, 20], time: 45 }, ];
+.pad{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+button.btn{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.03);padding:14px;border-radius:10px;color:inherit;font-size:18px}
+button.btn:hover{transform:translateY(-2px)}
+.btn.op{background:linear-gradient(180deg,#13203a,#0b1726);border:1px solid rgba(107,140,255,0.15)}
+.btn.equal{background:linear-gradient(180deg,var(--accent),#3757ff);color:white;font-weight:700;grid-column:span 2}
+.btn.zero{grid-column:span 2}
 
-const [levelIndex, setLevelIndex] = useState(0); const [question, setQuestion] = useState(null); const [answer, setAnswer] = useState(""); const [score, setScore] = useState(0); const [asked, setAsked] = useState(0); const [correctStreak, setCorrectStreak] = useState(0); const [lives, setLives] = useState(3); const [showResult, setShowResult] = useState(null); // true/false for last answer const [timeLeft, setTimeLeft] = useState(0); const timerRef = useRef(null); const [gameOver, setGameOver] = useState(false);
+/* Right column: history */
+.history{display:flex;flex-direction:column;height:100%}
+.hist-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.hist-list{margin-top:12px;overflow:auto;padding-right:6px}
+.hist-item{background:rgba(255,255,255,0.02);padding:10px;border-radius:10px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.hist-item .left{flex:1;min-width:0}
+.hist-exp{color:var(--muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hist-res{font-weight:700}
+.small{font-size:13px;color:var(--muted)}
 
-// helper: random int const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+/* controls */
+.controls{display:flex;gap:8px;flex-wrap:wrap}
+.btn-ghost{background:transparent;border:1px dashed rgba(255,255,255,0.04);padding:8px 10px;border-radius:8px;color:var(--muted)}
 
-// generate a new question based on current level const makeQuestion = (lvl) => { const ops = lvl.ops; const op = ops[rand(0, ops.length - 1)]; const [min, max] = lvl.range;
+footer.note{margin-top:12px;text-align:center;color:var(--muted);font-size:13px}
 
-let a = rand(min, max);
-let b = rand(min, max);
+/* responsive */
+@media (max-width:900px){.app{grid-template-columns:1fr;}.history{order:2}}
 
-// avoid division by zero and make division clean sometimes
-if (op === "/") {
-  b = rand(1, Math.max(1, max));
-  a = b * rand(0, Math.max(1, Math.floor(max / Math.max(1, b))));
-}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="card calc">
+      <div class="screen" id="screen" aria-live="polite">
+        <div class="expr" id="expr">0</div>
+        <div class="result" id="result">0</div>
+      </div><div class="pad" id="pad">
+    <button class="btn btn-ghost" data-action="clear">C</button>
+    <button class="btn btn-ghost" data-action="toggle-sign">±</button>
+    <button class="btn btn-ghost" data-action="percent">%</button>
+    <button class="btn op" data-value="/">÷</button>
 
-let expression = `${a} ${op} ${b}`;
-// compute correct answer (allow float for division)
-let correct = 0;
-switch (op) {
-  case "+":
-    correct = a + b; break;
-  case "-":
-    correct = a - b; break;
-  case "*":
-    correct = a * b; break;
-  case "/":
-    correct = b === 0 ? Infinity : +(a / b).toFixed(2); break;
-  default:
-    correct = a + b;
-}
+    <button class="btn" data-value="7">7</button>
+    <button class="btn" data-value="8">8</button>
+    <button class="btn" data-value="9">9</button>
+    <button class="btn op" data-value="*">×</button>
 
-return { expression, correct };
+    <button class="btn" data-value="4">4</button>
+    <button class="btn" data-value="5">5</button>
+    <button class="btn" data-value="6">6</button>
+    <button class="btn op" data-value="-">−</button>
 
-};
+    <button class="btn" data-value="1">1</button>
+    <button class="btn" data-value="2">2</button>
+    <button class="btn" data-value="3">3</button>
+    <button class="btn op" data-value="+">+</button>
 
-// start level const startLevel = (index) => { const lvl = LEVELS[index]; setLevelIndex(index); setScore(0); setAsked(0); setCorrectStreak(0); setLives(3); setGameOver(false); setShowResult(null); setTimeLeft(lvl.time || 0); const q = makeQuestion(lvl); setQuestion(q); };
+    <button class="btn zero" data-value="0">0</button>
+    <button class="btn" data-value=".">.</button>
+    <button class="btn equal" data-action="equals">=</button>
+  </div>
 
-// initialise first level on mount useEffect(() => { startLevel(0); // eslint-disable-next-line react-hooks/exhaustive-deps }, []);
-
-// manage timer if level has time limit useEffect(() => { const lvl = LEVELS[levelIndex]; if (!lvl || !lvl.time) return;
-
-clearInterval(timerRef.current);
-setTimeLeft(lvl.time);
-timerRef.current = setInterval(() => {
-  setTimeLeft((t) => {
-    if (t <= 1) {
-      clearInterval(timerRef.current);
-      // time's up - penalize
-      setLives((l) => Math.max(0, l - 1));
-      setShowResult(false);
-      setCorrectStreak(0);
-      // next question
-      setTimeout(() => {
-        if (!gameOver) nextQuestion();
-      }, 700);
-      return 0;
-    }
-    return t - 1;
-  });
-}, 1000);
-
-return () => clearInterval(timerRef.current);
-// eslint-disable-next-line react-hooks/exhaustive-deps
-
-}, [levelIndex]);
-
-// check game over useEffect(() => { if (lives <= 0) { setGameOver(true); clearInterval(timerRef.current); } }, [lives]);
-
-const submit = (e) => { e && e.preventDefault(); if (!question) return; const lvl = LEVELS[levelIndex];
-
-// parse answer; accept small float differences for division
-let parsed = parseFloat(answer);
-if (Number.isNaN(parsed)) parsed = null;
-
-const correct = question.correct;
-const isCorrect = parsed === null ? false : Math.abs(parsed - correct) < (Math.abs(correct) < 1 ? 0.01 : 0.001);
-
-if (isCorrect) {
-  setScore((s) => s + Math.max(1, Math.round(10 + correct / 2 + correctStreak)));
-  setCorrectStreak((c) => c + 1);
-  setShowResult(true);
-} else {
-  setLives((l) => Math.max(0, l - 1));
-  setCorrectStreak(0);
-  setShowResult(false);
-}
-
-setAsked((a) => a + 1);
-
-// prepare next question
-setTimeout(() => {
-  nextQuestion();
-}, 700);
-
-};
-
-const nextQuestion = () => { const lvl = LEVELS[levelIndex]; if (!lvl) return; // If asked enough, complete level if (asked + 1 >= lvl.count) { // auto advance if any life remains if (levelIndex + 1 < LEVELS.length && lives > 0) { startLevel(levelIndex + 1); return; } else { setGameOver(true); return; } }
-
-const q = makeQuestion(lvl);
-setQuestion(q);
-setAnswer("");
-setShowResult(null);
-// reset timer for timed levels
-if (lvl.time) {
-  setTimeLeft(lvl.time);
-  clearInterval(timerRef.current);
-  timerRef.current = setInterval(() => {
-    setTimeLeft((t) => Math.max(0, t - 1));
-  }, 1000);
-}
-
-};
-
-const restart = () => { startLevel(0); };
-
-// small UI helpers const progressPercent = () => { const lvl = LEVELS[levelIndex]; return Math.min(100, Math.round((asked / (lvl ? lvl.count : 1)) * 100)); };
-
-return ( <div className="min-h-screen bg-gradient-to-b from-gray-900 via-black to-gray-900 text-gray-100 flex items-center justify-center p-4"> <div className="w-full max-w-4xl"> <div className="flex items-center justify-between mb-6"> <div> <h1 className="text-3xl font-extrabold tracking-tight">Math Forge</h1> <p className="text-sm text-gray-400">Dark-themed progressive math game • Sharpen your skills</p> </div>
-
-<div className="flex items-center gap-3">
-        <div className="text-right">
-          <div className="text-xs text-gray-400">Level</div>
-          <div className="text-lg font-medium">{LEVELS[levelIndex].name}</div>
-        </div>
-
-        <div className="bg-gray-800/60 p-3 rounded-2xl text-center">
-          <div className="text-xs text-gray-400">Score</div>
-          <div className="text-lg font-semibold">{score}</div>
-        </div>
-
-        <div className="bg-gray-800/60 p-3 rounded-2xl text-center">
-          <div className="text-xs text-gray-400">Lives</div>
-          <div className="text-lg font-semibold">{lives}</div>
-        </div>
-      </div>
+  <div style="display:flex;gap:10px;margin-top:12px;align-items:center;justify-content:space-between">
+    <div class="controls">
+      <button class="btn-ghost" id="undo">Undo</button>
+      <button class="btn-ghost" id="redo">Redo</button>
+      <button class="btn-ghost" id="copy">Copy</button>
     </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <label class="small">Sound</label>
+      <input type="checkbox" id="soundToggle" checked>
+    </div>
+  </div>
 
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="bg-gradient-to-br from-gray-800/60 to-black p-6 rounded-3xl shadow-2xl"
-    >
-      <div className="flex flex-col md:flex-row gap-6">
-        <div className="flex-1">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <div className="text-xs text-gray-400">Question</div>
-              <div className="text-2xl font-bold tracking-tight">{question ? question.expression : "—"}</div>
-            </div>
+  <footer class="note">กดปุ่มบนแป้นหรือพิมพ์บนคีย์บอร์ด — ประวัติจะเก็บอัตโนมัติ</footer>
+</div>
 
-            <div className="text-right">
-              {LEVELS[levelIndex].time ? (
-                <div className="text-sm text-gray-300">Time left</div>
-              ) : (
-                <div className="text-sm text-gray-300">Progress</div>
-              )}
-              <div className="text-lg font-medium">{LEVELS[levelIndex].time ? `${timeLeft}s` : `${asked}/${LEVELS[levelIndex].count}`}</div>
-            </div>
-          </div>
+<div class="card history">
+  <div class="hist-head">
+    <div>
+      <div style="font-weight:700">ประวัติการคำนวณ</div>
+      <div class="small">คลิกเพื่อเรียกกลับมาใช้หรือคัดลอก</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <input id="search" placeholder="ค้นหา..." style="background:transparent;border:1px solid rgba(255,255,255,0.03);padding:8px;border-radius:8px;color:inherit" />
+      <button class="btn-ghost" id="clearAll">ลบทั้งหมด</button>
+    </div>
+  </div>
 
-          <form onSubmit={submit} className="flex gap-3 items-center">
-            <input
-              autoFocus
-              className="flex-1 bg-gray-900/60 border border-gray-800 rounded-xl p-3 text-lg outline-none placeholder-gray-500"
-              placeholder="Type your answer (numbers only)"
-              value={answer}
-              onChange={(e) => setAnswer(e.target.value)}
-            />
-            <button type="submit" className="px-5 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 transition-shadow shadow-lg font-semibold">
-              Submit
-            </button>
-          </form>
+  <div class="hist-list" id="histList" tabindex="0" aria-label="History list"></div>
 
-          <div className="mt-4 flex items-center gap-3">
-            <div className="flex-1 bg-gray-900/50 p-3 rounded-xl">
-              <div className="text-xs text-gray-400">Streak</div>
-              <div className="text-lg font-semibold">{correctStreak}</div>
-            </div>
-
-            <div className="w-56 bg-gray-900/40 rounded-xl p-2">
-              <div className="text-xs text-gray-400">Level progress</div>
-              <div className="h-2 bg-gray-800 rounded-full mt-2 overflow-hidden">
-                <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${progressPercent()}%` }} />
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-4 h-12">
-            {showResult !== null && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className={`inline-block px-4 py-2 rounded-lg font-semibold ${showResult ? "bg-emerald-600/90" : "bg-rose-600/90"}`}
-              >
-                {showResult ? "Correct!" : `Wrong — answer: ${question.correct}`}
-              </motion.div>
-            )}
-          </div>
-        </div>
-
-        <div className="w-80 md:w-64 flex-shrink-0">
-          <div className="bg-gray-900/50 p-4 rounded-2xl">
-            <div className="text-xs text-gray-400">Level Selector</div>
-            <div className="mt-3 flex flex-col gap-2">
-              {LEVELS.map((lvl, idx) => (
-                <button
-                  key={lvl.id}
-                  onClick={() => startLevel(idx)}
-                  className={`text-left p-3 rounded-xl transition ${idx === levelIndex ? "bg-indigo-600/40 border border-indigo-500" : "bg-gray-800/40 hover:bg-gray-800/60"}`}
-                >
-                  <div className="font-medium">{lvl.name}</div>
-                  <div className="text-xs text-gray-400">{lvl.count} questions • {lvl.ops.join(" ")}{lvl.time ? ` • ${lvl.time}s each` : ""}</div>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="mt-4 bg-gray-900/40 p-4 rounded-2xl">
-            <div className="text-xs text-gray-400">Quick Stats</div>
-            <div className="mt-2 grid grid-cols-2 gap-2">
-              <div className="p-2 bg-gray-900/60 rounded-lg">
-                <div className="text-xs text-gray-400">Asked</div>
-                <div className="font-semibold">{asked}</div>
-              </div>
-              <div className="p-2 bg-gray-900/60 rounded-lg">
-                <div className="text-xs text-gray-400">Score</div>
-                <div className="font-semibold">{score}</div>
-              </div>
-              <div className="p-2 bg-gray-900/60 rounded-lg">
-                <div className="text-xs text-gray-400">Lives</div>
-                <div className="font-semibold">{lives}</div>
-              </div>
-              <div className="p-2 bg-gray-900/60 rounded-lg">
-                <div className="text-xs text-gray-400">Level</div>
-                <div className="font-semibold">{LEVELS[levelIndex].name}</div>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-4 text-center">
-            <button onClick={() => setShowResult(null) || nextQuestion()} className="w-full py-2 rounded-xl bg-gray-800/50 hover:bg-gray-800/70">Skip</button>
-            <button onClick={restart} className="w-full mt-3 py-2 rounded-xl bg-emerald-600/80 hover:bg-emerald-600/90">Restart</button>
-          </div>
-        </div>
-      </div>
-
-      {/* Game over overlay */}
-      {gameOver && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 flex items-center justify-center bg-black/60">
-          <div className="bg-gray-900 p-8 rounded-3xl text-center w-full max-w-lg">
-            <h2 className="text-2xl font-bold mb-2">Game Over</h2>
-            <p className="text-gray-400 mb-4">Final score: <span className="font-semibold">{score}</span></p>
-            <div className="flex gap-3 justify-center">
-              <button onClick={restart} className="px-6 py-3 rounded-xl bg-indigo-600">Play Again</button>
-              <button onClick={() => { setGameOver(false); }} className="px-6 py-3 rounded-xl bg-gray-800/60">Close</button>
-            </div>
-          </div>
-        </motion.div>
-      )}
-    </motion.div>
-
-    <footer className="mt-6 text-center text-xs text-gray-500">Tip: try timed levels to push your reflexes — accuracy > speed for higher scores.</footer>
+  <div style="margin-top:12px;display:flex;gap:8px">
+    <button class="btn-ghost" id="export">Export</button>
+    <button class="btn-ghost" id="import">Import</button>
+    <input type="file" id="fileIn" accept="application/json" style="display:none" />
   </div>
 </div>
 
-); }
+  </div>  <script>
+    // Simple dark calculator with history stored in localStorage
+    const exprEl = document.getElementById('expr');
+    const resultEl = document.getElementById('result');
+    const histList = document.getElementById('histList');
+    const soundToggle = document.getElementById('soundToggle');
 
+    const STORAGE_KEY = 'darkcalc_history_v1';
+    let state = {
+      expr: '',
+      result: '0',
+      history: [],
+      undoStack: [],
+      redoStack: []
+    };
+
+    // Sound via WebAudio
+    const audioCtx = window.AudioContext ? new AudioContext() : null;
+    function clickSound(){
+      if(!audioCtx || !soundToggle.checked) return;
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      o.type = 'sine';
+      o.frequency.value = 880;
+      g.gain.value = 0.02;
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(); o.stop(audioCtx.currentTime + 0.05);
+    }
+
+    function load(){
+      try{
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if(raw){ state.history = JSON.parse(raw); }
+      }catch(e){ console.warn('load history error', e)}
+      renderHistory();
+    }
+
+    function saveHistory(){
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.history));
+    }
+
+    function pushHistory(exp, res){
+      const item = {id: Date.now(), exp, res};
+      state.history.unshift(item);
+      if(state.history.length>200) state.history.pop();
+      saveHistory(); renderHistory();
+    }
+
+    function render(){
+      exprEl.textContent = state.expr || '0';
+      resultEl.textContent = state.result;
+    }
+
+    function renderHistory(filter){
+      histList.innerHTML = '';
+      const list = state.history.filter(h => !filter || (h.exp+h.res).toLowerCase().includes(filter.toLowerCase()));
+      if(list.length===0){ histList.innerHTML = '<div class="small" style="padding:12px;color:var(--muted)">ไม่มีประวัติ</div>'; return; }
+      list.forEach(h => {
+        const div = document.createElement('div'); div.className='hist-item';
+        const left = document.createElement('div'); left.className='left';
+        const e = document.createElement('div'); e.className='hist-exp'; e.title=h.exp; e.textContent=h.exp;
+        const r = document.createElement('div'); r.className='hist-res'; r.textContent=h.res;
+        left.appendChild(e); left.appendChild(r);
+        const actions = document.createElement('div'); actions.style.display='flex'; actions.style.gap='6px';
+        const use = document.createElement('button'); use.className='btn-ghost'; use.textContent='Use'; use.onclick = ()=>{ state.expr=h.exp; state.result=h.res; render(); highlightItem(div); clickSound(); };
+        const copyBtn = document.createElement('button'); copyBtn.className='btn-ghost'; copyBtn.textContent='Copy'; copyBtn.onclick = ()=>{ navigator.clipboard?.writeText(h.res+'') ; copyBtn.textContent='Copied'; setTimeout(()=>copyBtn.textContent='Copy',1000); };
+        const del = document.createElement('button'); del.className='btn-ghost'; del.textContent='Del'; del.onclick=()=>{ state.history = state.history.filter(x=>x.id!==h.id); saveHistory(); renderHistory(document.getElementById('search').value); };
+        actions.appendChild(use); actions.appendChild(copyBtn); actions.appendChild(del);
+        div.appendChild(left); div.appendChild(actions);
+        div.oncontextmenu = (ev)=>{ ev.preventDefault(); navigator.clipboard?.writeText(h.exp+' = '+h.res); div.style.opacity=0.6; setTimeout(()=>div.style.opacity=1,300) };
+        histList.appendChild(div);
+      });
+    }
+
+    function highlightItem(el){
+      el.animate([{transform:'scale(1)'},{transform:'scale(1.02)'},{transform:'scale(1)'}],{duration:260});
+    }
+
+    function pressKey(value){
+      clickSound();
+      if(value==='='|| value==='Enter'){ evaluateExpr(); return; }
+      if(value==='Backspace'){ state.expr = state.expr.slice(0,-1); render(); return; }
+      if(value==='C'){ state.expr=''; state.result='0'; render(); return; }
+      // else append
+      state.expr += value;
+      render();
+    }
+
+    function evaluateExpr(){
+      if(!state.expr) return;
+      // normalize characters
+      let e = state.expr.replace(/×/g,'*').replace(/÷/g,'/').replace(/−/g,'-').replace(/,/g,'');
+      try{
+        // restrict allowed chars to numbers, operators, parentheses, dot, spaces
+        if(!/^[0-9+\-*/(). %]+$/.test(e)) throw new Error('Invalid characters');
+        // percent handling: convert 50% to (50/100)
+        e = e.replace(/(\d+(?:\.\d+)?)%/g,'($1/100)');
+        const fn = new Function('return ('+e+')');
+        let res = fn();
+        if(typeof res === 'number' && !Number.isFinite(res)) throw new Error('Non-finite');
+        // round to sensible digits
+        if(typeof res === 'number'){
+          res = Math.round(res * 1e10) / 1e10;
+        }
+        state.result = res + '';
+        pushHistory(state.expr, state.result);
+        state.undoStack.push(state.expr);
+        state.redoStack=[];
+        state.expr='';
+        render();
+      }catch(err){
+        state.result = 'Error'; render();
+        console.warn('eval err', err);
+      }
+    }
+
+    // attach pad buttons
+    document.getElementById('pad').addEventListener('click', (ev)=>{
+      const btn = ev.target.closest('button'); if(!btn) return;
+      const val = btn.getAttribute('data-value');
+      const action = btn.getAttribute('data-action');
+      if(val) pressKey(val);
+      if(action){
+        if(action==='clear') { state.expr=''; state.result='0'; render(); clickSound(); }
+        if(action==='equals') { evaluateExpr(); clickSound(); }
+        if(action==='percent') { pressKey('%'); }
+        if(action==='toggle-sign'){ if(state.expr.startsWith('-')) state.expr = state.expr.slice(1); else state.expr = '-'+state.expr; render(); }
+      }
+    });
+
+    // keyboard support
+    window.addEventListener('keydown', (e)=>{
+      if(e.target.tagName==='INPUT' || e.target.tagName==='TEXTAREA') return; // don't intercept
+      if(e.key === 'Enter') { e.preventDefault(); evaluateExpr(); }
+      else if(e.key === 'Backspace') { state.expr = state.expr.slice(0,-1); render(); }
+      else if(e.key === 'c' && (e.ctrlKey||e.metaKey)) { state.expr=''; state.result='0'; render(); }
+      else if(/^[0-9+\-*/().%]$/.test(e.key)) { pressKey(e.key); }
+    });
+
+    // undo/redo
+    document.getElementById('undo').addEventListener('click', ()=>{
+      clickSound(); if(state.undoStack.length===0) return; const val=state.undoStack.pop(); state.redoStack.push(val); state.expr=val; render();
+    });
+    document.getElementById('redo').addEventListener('click', ()=>{ clickSound(); if(state.redoStack.length===0) return; const val=state.redoStack.pop(); state.undoStack.push(val); state.expr=val; render(); });
+
+    // copy
+    document.getElementById('copy').addEventListener('click', ()=>{ navigator.clipboard?.writeText(state.result+''); clickSound(); });
+
+    // clear all history
+    document.getElementById('clearAll').addEventListener('click', ()=>{ if(confirm('ลบประวัติทั้งหมด?')){ state.history=[]; saveHistory(); renderHistory(); } });
+
+    // search
+    document.getElementById('search').addEventListener('input', (e)=>{ renderHistory(e.target.value); });
+
+    // export/import
+    document.getElementById('export').addEventListener('click', ()=>{
+      const data = JSON.stringify(state.history, null, 2);
+      const blob = new Blob([data], {type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href=url; a.download='darkcalc_history.json'; a.click(); URL.revokeObjectURL(url);
+    });
+    document.getElementById('import').addEventListener('click', ()=>{ document.getElementById('fileIn').click(); });
+    document.getElementById('fileIn').addEventListener('change', (e)=>{
+      const f = e.target.files[0]; if(!f) return; const reader = new FileReader(); reader.onload = ()=>{ try{ const arr = JSON.parse(reader.result); if(Array.isArray(arr)){ state.history = arr.concat(state.history).slice(0,200); saveHistory(); renderHistory(); alert('นำเข้าเรียบร้อย'); } }catch(err){ alert('ไฟล์ไม่ถูกต้อง'); }}; reader.readAsText(f);
+    });
+
+    // init
+    load(); render();
+  </script></body>
+</html>
