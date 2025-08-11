@@ -1,567 +1,64 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>เครื่องคิดเลขสลับโหมดได้</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap');
-  :root {
-    --bg-dark: #121217;
-    --panel-dark: #1e1f29;
-    --accent: #7c5cff;
-    --text-light: #e1e2e7;
-    --text-muted: #888ba7;
-    --btn-bg: #2a2c3d;
-    --btn-hover: #3b3f58;
-    --shadow: rgba(124, 92, 255, 0.4);
-  }
-  * {
-    box-sizing: border-box;
-  }
-  body {
-    margin: 0; padding: 0;
-    background: var(--bg-dark);
-    font-family: 'Poppins', sans-serif;
-    color: var(--text-light);
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    min-height: 100vh;
-    padding: 20px;
-    user-select: none;
-  }
-  .container {
-    display: flex;
-    gap: 30px;
-    max-width: 1000px; /* Adjusted for scientific mode */
-    width: 100%;
-  }
-  .calculator {
-    background: var(--panel-dark);
-    border-radius: 18px;
-    box-shadow: 0 10px 30px var(--shadow);
-    padding: 25px 30px;
-    flex: 1 1 480px;
-    display: flex;
-    flex-direction: column;
-  }
-  .display-container {
-      position: relative;
-  }
-  .display {
-    background: #222431;
-    border-radius: 14px;
-    padding: 20px 25px;
-    font-size: 2.6rem;
-    font-weight: 700;
-    letter-spacing: 1.2px;
-    color: var(--text-light);
-    min-height: 90px;
-    text-align: right;
-    overflow-wrap: break-word;
-    box-shadow: inset 0 0 10px rgba(124, 92, 255, 0.3);
-    margin-bottom: 24px;
-    word-break: break-all;
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-  }
-  .buttons {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-  }
-  .buttons.sci-mode {
-      grid-template-columns: repeat(7, 1fr);
-  }
-  button {
-    background: var(--btn-bg);
-    border: none;
-    border-radius: 14px;
-    font-size: 1.4rem;
-    font-weight: 600;
-    color: var(--text-light);
-    padding: 18px 0;
-    cursor: pointer;
-    box-shadow: 0 4px 8px rgba(124, 92, 255, 0.2);
-    transition:
-      background 0.3s ease,
-      box-shadow 0.3s ease,
-      transform 0.15s ease;
-    user-select: none;
-  }
-  button:hover {
-    background: var(--btn-hover);
-    box-shadow: 0 6px 20px var(--shadow);
-  }
-  button:active {
-    transform: scale(0.96);
-  }
-  .operator {
-    background: linear-gradient(135deg, #7c5cff, #6150d8);
-    box-shadow: 0 4px 12px #7c5cff88;
-  }
-  .operator:hover {
-    background: linear-gradient(135deg, #a18eff, #7c5cff);
-    box-shadow: 0 8px 25px #a18effbb;
-  }
-  .equal {
-    grid-column: span 1;
-    background: #4e57ff;
-    font-weight: 700;
-    box-shadow: 0 6px 16px #4e57ffbb;
-  }
-  .equal:hover {
-    background: #6677ff;
-    box-shadow: 0 8px 28px #6677ffcc;
-  }
-  .zero {
-    grid-column: span 2;
-  }
-  
-  /* Mode-specific styles */
-  .mode-toggle-btn {
-    position: absolute;
-    top: 5px;
-    left: 5px;
-    background: var(--accent);
-    color: var(--text-light);
-    border: none;
-    border-radius: 8px;
-    padding: 8px 12px;
-    font-size: 0.8rem;
-    cursor: pointer;
-    z-index: 10;
-  }
-  .hidden {
-      display: none !important;
-  }
-  .sci-btn {
-      font-size: 1rem;
-      padding: 12px 0;
-  }
-  .buttons.sci-mode .zero {
-      grid-column: span 1;
-  }
-  .buttons.sci-mode .equal {
-      grid-column: 7;
-      grid-row: 5 / 7;
-      height: 100%;
-  }
+import math
 
-  /* History Panel */
-  .history-panel {
-    background: var(--panel-dark);
-    border-radius: 18px;
-    box-shadow: 0 10px 30px var(--shadow);
-    width: 350px;
-    padding: 20px 25px;
-    display: flex;
-    flex-direction: column;
-    max-height: 600px;
-  }
-  .history-header {
-    font-weight: 700;
-    font-size: 1.6rem;
-    margin-bottom: 14px;
-    color: var(--accent);
-    user-select: none;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .history-list {
-    overflow-y: auto;
-    flex-grow: 1;
-    scrollbar-width: thin;
-    scrollbar-color: var(--accent) transparent;
-  }
-  .history-list::-webkit-scrollbar {
-    width: 8px;
-  }
-  .history-list::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  .history-list::-webkit-scrollbar-thumb {
-    background-color: var(--accent);
-    border-radius: 10px;
-  }
-  .history-item {
-    background: #2f3249;
-    border-radius: 14px;
-    padding: 14px 18px;
-    margin-bottom: 12px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 8px;
-    user-select: text;
-    cursor: pointer;
-  }
-  .history-item:hover {
-      background: #414561;
-  }
-  .history-expression {
-    color: var(--text-muted);
-    font-size: 1rem;
-    flex: 1 1 auto;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-  }
-  .history-result {
-    font-weight: 700;
-    font-size: 1.1rem;
-    min-width: 80px;
-    text-align: right;
-    color: var(--accent);
-    user-select: text;
-  }
-  .history-actions {
-    display: flex;
-    gap: 8px;
-  }
-  .history-actions button {
-    background: transparent;
-    border: 1.5px solid var(--accent);
-    padding: 6px 10px;
-    font-size: 0.85rem;
-    border-radius: 12px;
-    color: var(--accent);
-    transition: background 0.3s ease, color 0.3s ease;
-    cursor: pointer;
-  }
-  .history-actions button:hover {
-    background: var(--accent);
-    color: #121217;
-  }
-  /* Controls */
-  .controls {
-    margin-top: 14px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .controls button {
-    background: transparent;
-    border: 1.5px solid var(--accent);
-    padding: 8px 14px;
-    font-size: 0.9rem;
-    border-radius: 14px;
-    color: var(--accent);
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.3s ease, color 0.3s ease;
-  }
-  .controls button:hover {
-    background: var(--accent);
-    color: #121217;
-  }
-  .search-input {
-    flex-grow: 1;
-    margin-right: 10px;
-    background: #222431;
-    border: none;
-    border-radius: 14px;
-    padding: 8px 14px;
-    font-size: 1rem;
-    color: var(--text-light);
-    box-shadow: inset 0 0 6px rgba(124, 92, 255, 0.3);
-    transition: background 0.3s ease;
-  }
-  .search-input::placeholder {
-    color: var(--text-muted);
-  }
-  .search-input:focus {
-    outline: none;
-    background: #333651;
-  }
-  /* Responsive */
-  @media (max-width: 860px) {
-    .container {
-      flex-direction: column;
-      align-items: center;
-    }
-    .history-panel {
-      width: 100%;
-      max-height: 300px;
-      margin-top: 24px;
-    }
-    .calculator {
-      width: 100%;
-      max-width: 480px;
-    }
-    .buttons.sci-mode {
-      grid-template-columns: repeat(5, 1fr);
-    }
-  }
-</style>
-</head>
-<body>
-  <div class="container" role="main" aria-label="เครื่องคิดเลขธีมมืดพร้อมประวัติ">
-    <section class="calculator" aria-label="เครื่องคิดเลข">
-      <div class="display-container">
-        <button id="modeToggleBtn" class="mode-toggle-btn">Sci</button>
-        <div class="display" id="display" aria-live="polite" aria-atomic="true">0</div>
-      </div>
-      <div class="buttons" id="buttons" role="group" aria-label="ปุ่มเครื่องคิดเลข">
-        <button type="button" data-action="clear" aria-label="ล้าง" class="std-btn clear">C</button>
-        <button type="button" data-action="backspace" aria-label="ลบตัวสุดท้าย" class="std-btn">⌫</button>
-        <button type="button" data-action="percent" aria-label="เปอร์เซ็นต์" class="std-btn">%</button>
-        <button type="button" data-action="operator" data-value="/" aria-label="หาร" class="operator std-btn">÷</button>
-        <button type="button" data-value="7" class="std-btn">7</button>
-        <button type="button" data-value="8" class="std-btn">8</button>
-        <button type="button" data-value="9" class="std-btn">9</button>
-        <button type="button" data-action="operator" data-value="*" aria-label="คูณ" class="operator std-btn">×</button>
-        <button type="button" data-value="4" class="std-btn">4</button>
-        <button type="button" data-value="5" class="std-btn">5</button>
-        <button type="button" data-value="6" class="std-btn">6</button>
-        <button type="button" data-action="operator" data-value="-" aria-label="ลบ" class="operator std-btn">−</button>
-        <button type="button" data-value="1" class="std-btn">1</button>
-        <button type="button" data-value="2" class="std-btn">2</button>
-        <button type="button" data-value="3" class="std-btn">3</button>
-        <button type="button" data-action="operator" data-value="+" aria-label="บวก" class="operator std-btn">+</button>
-        <button type="button" data-value="0" class="zero std-btn">0</button>
-        <button type="button" data-value="." class="std-btn">.</button>
-        <button type="button" data-action="equals" class="equal std-btn" aria-label="เท่ากับ">=</button>
-        
-        <button type="button" data-value="(" class="hidden sci-btn">(</button>
-        <button type="button" data-value=")" class="hidden sci-btn">)</button>
-        <button type="button" data-value="sin(" data-action="function" class="hidden sci-btn">sin</button>
-        <button type="button" data-value="cos(" data-action="function" class="hidden sci-btn">cos</button>
-        <button type="button" data-value="tan(" data-action="function" class="hidden sci-btn">tan</button>
-        <button type="button" data-value="log(" data-action="function" class="hidden sci-btn">log</button>
-        <button type="button" data-value="ln(" data-action="function" class="hidden sci-btn">ln</button>
-        <button type="button" data-value="sqrt(" data-action="function" class="hidden sci-btn">√</button>
-        <button type="button" data-value="^2" data-action="function" class="hidden sci-btn">x²</button>
-        <button type="button" data-value="pi" data-action="constant" class="hidden sci-btn">π</button>
-      </div>
-    </section>
-    <aside class="history-panel" aria-label="ประวัติการคำนวณ">
-      <div class="history-header">
-        ประวัติ
-      </div>
-      <div class="history-list" id="historyList" tabindex="0"></div>
-      <div class="controls">
-        <input type="search" placeholder="ค้นหา..." aria-label="ค้นหาประวัติ" class="search-input" id="search" />
-        <button type="button" id="clearHistory">ลบทั้งหมด</button>
-      </div>
-    </aside>
-  </div>
-
-<script>
-(() => {
-  const display = document.getElementById('display');
-  const historyList = document.getElementById('historyList');
-  const searchInput = document.getElementById('search');
-  const clearHistoryBtn = document.getElementById('clearHistory');
-  const buttonsContainer = document.getElementById('buttons');
-  const modeToggleBtn = document.getElementById('modeToggleBtn');
-
-  let expression = '';
-  let history = JSON.parse(localStorage.getItem('calculatorHistory') || '[]');
-  let resultDisplayed = false;
-  let currentMode = 'std';
-
-  function toggleMode() {
-    if (currentMode === 'std') {
-        currentMode = 'sci';
-        modeToggleBtn.textContent = 'Std';
-        buttonsContainer.classList.add('sci-mode');
-        document.querySelectorAll('.std-btn').forEach(btn => btn.classList.add('hidden'));
-        document.querySelectorAll('.sci-btn').forEach(btn => btn.classList.remove('hidden'));
-    } else {
-        currentMode = 'std';
-        modeToggleBtn.textContent = 'Sci';
-        buttonsContainer.classList.remove('sci-mode');
-        document.querySelectorAll('.std-btn').forEach(btn => btn.classList.remove('hidden'));
-        document.querySelectorAll('.sci-btn').forEach(btn => btn.classList.add('hidden'));
-    }
-  }
-
-  function safeEval(expr) {
-    try {
-      if (expr.trim() === '') return null;
-      let e = expr.replace(/÷/g, '/').replace(/×/g, '*').replace(/−/g, '-');
-      e = e.replace(/(\d+(\.\d+)?)%/g, '($1/100)');
-      
-      // Handle scientific functions
-      e = e.replace(/sin\(/g, 'Math.sin(');
-      e = e.replace(/cos\(/g, 'Math.cos(');
-      e = e.replace(/tan\(/g, 'Math.tan(');
-      e = e.replace(/log\(/g, 'Math.log10(');
-      e = e.replace(/ln\(/g, 'Math.log(');
-      e = e.replace(/sqrt\(/g, 'Math.sqrt(');
-      e = e.replace(/(\d)\^2/g, '$1**2'); // Corrected for a common pattern
-      e = e.replace(/π/g, 'Math.PI');
-
-      if (!/^[0-9+\-*/().% ]+$/.test(e.replace(/Math\./g, ''))) return null;
-
-      const fn = new Function('return ' + e);
-      let res = fn();
-      if (typeof res === 'number') {
-        res = Math.round(res * 1e10) / 1e10;
-        if (!isFinite(res)) return 'Error';
-      }
-      return res.toString();
-    } catch {
-      return 'Error';
-    }
-  }
-
-  function updateDisplay() {
-    display.textContent = expression || '0';
-  }
-
-  function renderHistory(filter = '') {
-    historyList.innerHTML = '';
-    const filtered = history.filter(h =>
-      h.expr.toLowerCase().includes(filter.toLowerCase()) ||
-      h.res.toLowerCase().includes(filter.toLowerCase())
-    );
-    if (filtered.length === 0) {
-      historyList.innerHTML = `<div style="color: var(--text-muted); text-align:center; margin-top:20px;">ไม่มีประวัติ</div>`;
-      return;
-    }
-    filtered.forEach(item => {
-      const div = document.createElement('div');
-      div.className = 'history-item';
-      div.innerHTML = `
-        <div class="history-expression">${item.expr}</div>
-        <div class="history-result">${item.res}</div>
-      `;
-      div.onclick = () => {
-        expression = item.expr;
-        resultDisplayed = false;
-        updateDisplay();
-      };
-      historyList.appendChild(div);
-    });
-  }
-
-  function saveHistory() {
-    localStorage.setItem('calculatorHistory', JSON.stringify(history));
-  }
-
-  function addToHistory(expr, res) {
-    if (expr.trim() === '' || res === null || res === 'Error') return;
-    history.unshift({ expr, res });
-    if (history.length > 300) history.pop();
-    saveHistory();
-    renderHistory(searchInput.value);
-  }
-
-  buttonsContainer.addEventListener('click', e => {
-    const button = e.target.closest('button');
-    if (!button) return;
-
-    const action = button.getAttribute('data-action');
-    const value = button.getAttribute('data-value');
-
-    if (value && !action) {
-      if (resultDisplayed) {
-        expression = value;
-        resultDisplayed = false;
-      } else {
-        expression += value;
-      }
-    }
+def calculate(expression):
+    """
+    Calculates a mathematical expression, including scientific functions.
+    """
+    # Sanitize and replace special characters/functions with Python-compatible ones
+    # For example, replace '√' with 'sqrt'
+    sanitized_expression = expression.replace('×', '*')
+    sanitized_expression = sanitized_expression.replace('÷', '/')
+    sanitized_expression = sanitized_expression.replace('−', '-')
+    sanitized_expression = sanitized_expression.replace('√', 'sqrt')
+    sanitized_expression = sanitized_expression.replace('π', 'pi')
     
-    if (action) {
-        switch (action) {
-            case 'clear':
-                expression = '';
-                resultDisplayed = false;
-                break;
-            case 'backspace':
-                expression = expression.slice(0, -1);
-                break;
-            case 'percent':
-                expression += '%';
-                resultDisplayed = false;
-                break;
-            case 'equals':
-                const res = safeEval(expression);
-                if (res === 'Error') {
-                    display.textContent = 'Error';
-                    expression = '';
-                    resultDisplayed = true;
-                    return;
-                }
-                addToHistory(expression, res);
-                expression = res;
-                resultDisplayed = true;
-                break;
-            case 'operator':
-                if (expression === '' && value === '-') {
-                    expression = '-';
-                } else if (expression !== '') {
-                    if (/[+\-*/.]$/.test(expression)) {
-                        expression = expression.slice(0, -1) + value;
-                    } else {
-                        expression += value;
-                    }
-                }
-                resultDisplayed = false;
-                break;
-            case 'function':
-                if (resultDisplayed) {
-                    expression = value;
-                    resultDisplayed = false;
-                } else {
-                    expression += value;
-                }
-                break;
-            case 'constant':
-                expression += value;
-                break;
-        }
+    # Pre-process scientific functions to be usable with Python's math library
+    sanitized_expression = sanitized_expression.replace('sin(', 'math.sin(')
+    sanitized_expression = sanitized_expression.replace('cos(', 'math.cos(')
+    sanitized_expression = sanitized_expression.replace('tan(', 'math.tan(')
+    sanitized_expression = sanitized_expression.replace('log(', 'math.log10(')
+    sanitized_expression = sanitized_expression.replace('ln(', 'math.log(')
+    sanitized_expression = sanitized_expression.replace('sqrt(', 'math.sqrt(')
+    sanitized_expression = sanitized_expression.replace('pi', 'math.pi')
+
+    # Add powers like x^2, x^3
+    sanitized_expression = sanitized_expression.replace('^', '**')
+
+    # Use a dictionary to define allowed globals to prevent malicious code injection
+    # This is a safer alternative to a full `eval()`
+    allowed_globals = {
+        "__builtins__": None,
+        "math": math,
+        "pi": math.pi,
+        "sin": math.sin,
+        "cos": math.cos,
+        "tan": math.tan,
+        "log": math.log,
+        "log10": math.log10,
+        "sqrt": math.sqrt
     }
 
-    updateDisplay();
-  });
+    try:
+        # Use eval with restricted globals to execute the expression
+        result = eval(sanitized_expression, allowed_globals)
+        return str(result)
+    except Exception as e:
+        return f"Error: {e}"
 
-  searchInput.addEventListener('input', e => {
-    renderHistory(e.target.value);
-  });
+def main():
+    print("เครื่องคิดเลขวิทยาศาสตร์ (Python)")
+    print("ป้อนสูตรคณิตศาสตร์ หรือ 'exit' เพื่อออกจากโปรแกรม")
+    print("ตัวอย่าง: sin(pi/2), 2^3, 10 + 5 * 2, sqrt(25), log(100)")
+    
+    while True:
+        user_input = input("ป้อนสูตร: ")
+        
+        if user_input.lower() == 'exit':
+            print("ออกจากโปรแกรม")
+            break
+        
+        result = calculate(user_input)
+        print("ผลลัพธ์:", result)
 
-  clearHistoryBtn.addEventListener('click', () => {
-    if (confirm('ต้องการลบประวัติทั้งหมดหรือไม่?')) {
-      history = [];
-      saveHistory();
-      renderHistory();
-    }
-  });
-
-  modeToggleBtn.addEventListener('click', toggleMode);
-
-  document.addEventListener('keydown', e => {
-      const key = e.key;
-      
-      if (key === 'Enter') {
-          document.querySelector('button[data-action="equals"]:not(.hidden)').click();
-          e.preventDefault();
-      } else if (key === 'Backspace') {
-          document.querySelector('button[data-action="backspace"]:not(.hidden)').click();
-          e.preventDefault();
-      } else if (key === 'Escape') {
-          document.querySelector('button[data-action="clear"]:not(.hidden)').click();
-          e.preventDefault();
-      } else if (/[0-9]/.test(key) || key === '.') {
-          const button = document.querySelector(`button[data-value="${key}"]:not(.hidden)`);
-          if (button) button.click();
-      } else if (['+', '-', '*', '/'].includes(key)) {
-          const button = document.querySelector(`button[data-value="${key}"]:not(.hidden)`);
-          if (button) button.click();
-      }
-  });
-
-  // Initial setup
-  renderHistory();
-  updateDisplay();
-  toggleMode(); // Start with standard mode by default
-})();
-</script>
-</body>
-</html>
+if __name__ == "__main__":
+    main()
