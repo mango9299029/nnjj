@@ -1,285 +1,159 @@
-<!doctype html>
-
-<html lang="th">
+<!DOCTYPE html><html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>DarkCalc — เครื่องคิดเลขธีมมืดพร้อมประวัติ</title>
-  <style>
-    :root{--bg:#0b0f13;--panel:#0f1720;--muted:#9aa4ae;--accent:#6b8cff;--glass:rgba(255,255,255,0.03)}
-    *{box-sizing:border-box}
-    html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial}
-    body{background:linear-gradient(180deg,#02040a 0%, #071018 100%);color:#e6eef8;display:flex;align-items:center;justify-content:center;padding:28px}
-    .app{width:980px;max-width:98%;display:grid;grid-template-columns:1fr 360px;gap:20px}
-    .card{background:linear-gradient(180deg,var(--panel), #07101a);border-radius:14px;padding:18px;box-shadow:0 6px 30px rgba(2,6,23,0.6);border:1px solid rgba(255,255,255,0.03)}/* Calculator area */
-.calc{display:flex;flex-direction:column;gap:12px}
-.screen{background:var(--glass);padding:14px;border-radius:12px;min-height:92px;display:flex;flex-direction:column;justify-content:center}
-.expr{color:var(--muted);font-size:15px;min-height:20px;word-break:break-all}
-.result{font-size:28px;font-weight:700;letter-spacing:0.4px}
-
-.pad{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-button.btn{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.03);padding:14px;border-radius:10px;color:inherit;font-size:18px}
-button.btn:hover{transform:translateY(-2px)}
-.btn.op{background:linear-gradient(180deg,#13203a,#0b1726);border:1px solid rgba(107,140,255,0.15)}
-.btn.equal{background:linear-gradient(180deg,var(--accent),#3757ff);color:white;font-weight:700;grid-column:span 2}
-.btn.zero{grid-column:span 2}
-
-/* Right column: history */
-.history{display:flex;flex-direction:column;height:100%}
-.hist-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.hist-list{margin-top:12px;overflow:auto;padding-right:6px}
-.hist-item{background:rgba(255,255,255,0.02);padding:10px;border-radius:10px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:10px}
-.hist-item .left{flex:1;min-width:0}
-.hist-exp{color:var(--muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.hist-res{font-weight:700}
-.small{font-size:13px;color:var(--muted)}
-
-/* controls */
-.controls{display:flex;gap:8px;flex-wrap:wrap}
-.btn-ghost{background:transparent;border:1px dashed rgba(255,255,255,0.04);padding:8px 10px;border-radius:8px;color:var(--muted)}
-
-footer.note{margin-top:12px;text-align:center;color:var(--muted);font-size:13px}
-
-/* responsive */
-@media (max-width:900px){.app{grid-template-columns:1fr;}.history{order:2}}
-
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dark Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+<style>
+  body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #0f0f0f, #1c1c1c);
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+  }
+  .calculator {
+    background: rgba(30, 30, 30, 0.85);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    width: 320px;
+    position: relative;
+  }
+  .display {
+    background: rgba(0,0,0,0.3);
+    padding: 15px;
+    border-radius: 10px;
+    font-size: 1.8em;
+    text-align: right;
+    min-height: 50px;
+    margin-bottom: 15px;
+    box-shadow: inset 0 0 5px rgba(0,0,0,0.4);
+  }
+  .buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+  button {
+    padding: 15px;
+    border: none;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.05);
+    color: #fff;
+    font-size: 1.2em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  button:hover {
+    background: rgba(255,255,255,0.15);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 255, 200, 0.4);
+  }
+  .history {
+    position: absolute;
+    top: 0;
+    right: -250px;
+    width: 230px;
+    height: 100%;
+    background: rgba(20, 20, 20, 0.95);
+    backdrop-filter: blur(8px);
+    border-radius: 0 20px 20px 0;
+    padding: 15px;
+    overflow-y: auto;
+    transition: right 0.3s ease;
+    box-shadow: -2px 0 10px rgba(0,0,0,0.5);
+  }
+  .history.show {
+    right: -250px;
+    right: 100%;
+  }
+  .history h3 {
+    margin-top: 0;
+    font-weight: 500;
+    border-bottom: 1px solid rgba(255,255,255,0.2);
+    padding-bottom: 8px;
+  }
+  .toggle-history {
+    position: absolute;
+    top: 10px;
+    left: -60px;
+    background: rgba(255,255,255,0.05);
+    padding: 10px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .toggle-history:hover {
+    background: rgba(255,255,255,0.15);
+  }
+</style>
 </head>
 <body>
-  <div class="app">
-    <div class="card calc">
-      <div class="screen" id="screen" aria-live="polite">
-        <div class="expr" id="expr">0</div>
-        <div class="result" id="result">0</div>
-      </div><div class="pad" id="pad">
-    <button class="btn btn-ghost" data-action="clear">C</button>
-    <button class="btn btn-ghost" data-action="toggle-sign">±</button>
-    <button class="btn btn-ghost" data-action="percent">%</button>
-    <button class="btn op" data-value="/">÷</button>
+  <div class="calculator">
+    <div class="display" id="display"></div>
+    <div class="buttons">
+      <button onclick="appendValue('7')">7</button>
+      <button onclick="appendValue('8')">8</button>
+      <button onclick="appendValue('9')">9</button>
+      <button onclick="appendValue('/')">÷</button><button onclick="appendValue('4')">4</button>
+  <button onclick="appendValue('5')">5</button>
+  <button onclick="appendValue('6')">6</button>
+  <button onclick="appendValue('*')">×</button>
 
-    <button class="btn" data-value="7">7</button>
-    <button class="btn" data-value="8">8</button>
-    <button class="btn" data-value="9">9</button>
-    <button class="btn op" data-value="*">×</button>
+  <button onclick="appendValue('1')">1</button>
+  <button onclick="appendValue('2')">2</button>
+  <button onclick="appendValue('3')">3</button>
+  <button onclick="appendValue('-')">−</button>
 
-    <button class="btn" data-value="4">4</button>
-    <button class="btn" data-value="5">5</button>
-    <button class="btn" data-value="6">6</button>
-    <button class="btn op" data-value="-">−</button>
-
-    <button class="btn" data-value="1">1</button>
-    <button class="btn" data-value="2">2</button>
-    <button class="btn" data-value="3">3</button>
-    <button class="btn op" data-value="+">+</button>
-
-    <button class="btn zero" data-value="0">0</button>
-    <button class="btn" data-value=".">.</button>
-    <button class="btn equal" data-action="equals">=</button>
-  </div>
-
-  <div style="display:flex;gap:10px;margin-top:12px;align-items:center;justify-content:space-between">
-    <div class="controls">
-      <button class="btn-ghost" id="undo">Undo</button>
-      <button class="btn-ghost" id="redo">Redo</button>
-      <button class="btn-ghost" id="copy">Copy</button>
-    </div>
-    <div style="display:flex;gap:8px;align-items:center">
-      <label class="small">Sound</label>
-      <input type="checkbox" id="soundToggle" checked>
-    </div>
-  </div>
-
-  <footer class="note">กดปุ่มบนแป้นหรือพิมพ์บนคีย์บอร์ด — ประวัติจะเก็บอัตโนมัติ</footer>
+  <button onclick="appendValue('0')">0</button>
+  <button onclick="appendValue('.')">.</button>
+  <button onclick="calculate()">=</button>
+  <button onclick="appendValue('+')">+</button>
+</div>
+<div class="toggle-history" onclick="toggleHistory()">📜</div>
+<div class="history" id="history">
+  <h3>History</h3>
+  <ul id="history-list"></ul>
 </div>
 
-<div class="card history">
-  <div class="hist-head">
-    <div>
-      <div style="font-weight:700">ประวัติการคำนวณ</div>
-      <div class="small">คลิกเพื่อเรียกกลับมาใช้หรือคัดลอก</div>
-    </div>
-    <div style="display:flex;gap:8px;align-items:center">
-      <input id="search" placeholder="ค้นหา..." style="background:transparent;border:1px solid rgba(255,255,255,0.03);padding:8px;border-radius:8px;color:inherit" />
-      <button class="btn-ghost" id="clearAll">ลบทั้งหมด</button>
-    </div>
-  </div>
+  </div><script>
+  let display = document.getElementById('display');
+  let historyList = document.getElementById('history-list');
+  let history = [];
 
-  <div class="hist-list" id="histList" tabindex="0" aria-label="History list"></div>
-
-  <div style="margin-top:12px;display:flex;gap:8px">
-    <button class="btn-ghost" id="export">Export</button>
-    <button class="btn-ghost" id="import">Import</button>
-    <input type="file" id="fileIn" accept="application/json" style="display:none" />
-  </div>
-</div>
-
-  </div>  <script>
-    // Simple dark calculator with history stored in localStorage
-    const exprEl = document.getElementById('expr');
-    const resultEl = document.getElementById('result');
-    const histList = document.getElementById('histList');
-    const soundToggle = document.getElementById('soundToggle');
-
-    const STORAGE_KEY = 'darkcalc_history_v1';
-    let state = {
-      expr: '',
-      result: '0',
-      history: [],
-      undoStack: [],
-      redoStack: []
-    };
-
-    // Sound via WebAudio
-    const audioCtx = window.AudioContext ? new AudioContext() : null;
-    function clickSound(){
-      if(!audioCtx || !soundToggle.checked) return;
-      const o = audioCtx.createOscillator();
-      const g = audioCtx.createGain();
-      o.type = 'sine';
-      o.frequency.value = 880;
-      g.gain.value = 0.02;
-      o.connect(g); g.connect(audioCtx.destination);
-      o.start(); o.stop(audioCtx.currentTime + 0.05);
-    }
-
-    function load(){
-      try{
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if(raw){ state.history = JSON.parse(raw); }
-      }catch(e){ console.warn('load history error', e)}
+  function appendValue(val) {
+    display.textContent += val;
+  }
+  function calculate() {
+    try {
+      let expression = display.textContent;
+      let result = eval(expression);
+      display.textContent = result;
+      history.unshift(`${expression} = ${result}`);
       renderHistory();
+    } catch {
+      display.textContent = 'Error';
     }
-
-    function saveHistory(){
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.history));
-    }
-
-    function pushHistory(exp, res){
-      const item = {id: Date.now(), exp, res};
-      state.history.unshift(item);
-      if(state.history.length>200) state.history.pop();
-      saveHistory(); renderHistory();
-    }
-
-    function render(){
-      exprEl.textContent = state.expr || '0';
-      resultEl.textContent = state.result;
-    }
-
-    function renderHistory(filter){
-      histList.innerHTML = '';
-      const list = state.history.filter(h => !filter || (h.exp+h.res).toLowerCase().includes(filter.toLowerCase()));
-      if(list.length===0){ histList.innerHTML = '<div class="small" style="padding:12px;color:var(--muted)">ไม่มีประวัติ</div>'; return; }
-      list.forEach(h => {
-        const div = document.createElement('div'); div.className='hist-item';
-        const left = document.createElement('div'); left.className='left';
-        const e = document.createElement('div'); e.className='hist-exp'; e.title=h.exp; e.textContent=h.exp;
-        const r = document.createElement('div'); r.className='hist-res'; r.textContent=h.res;
-        left.appendChild(e); left.appendChild(r);
-        const actions = document.createElement('div'); actions.style.display='flex'; actions.style.gap='6px';
-        const use = document.createElement('button'); use.className='btn-ghost'; use.textContent='Use'; use.onclick = ()=>{ state.expr=h.exp; state.result=h.res; render(); highlightItem(div); clickSound(); };
-        const copyBtn = document.createElement('button'); copyBtn.className='btn-ghost'; copyBtn.textContent='Copy'; copyBtn.onclick = ()=>{ navigator.clipboard?.writeText(h.res+'') ; copyBtn.textContent='Copied'; setTimeout(()=>copyBtn.textContent='Copy',1000); };
-        const del = document.createElement('button'); del.className='btn-ghost'; del.textContent='Del'; del.onclick=()=>{ state.history = state.history.filter(x=>x.id!==h.id); saveHistory(); renderHistory(document.getElementById('search').value); };
-        actions.appendChild(use); actions.appendChild(copyBtn); actions.appendChild(del);
-        div.appendChild(left); div.appendChild(actions);
-        div.oncontextmenu = (ev)=>{ ev.preventDefault(); navigator.clipboard?.writeText(h.exp+' = '+h.res); div.style.opacity=0.6; setTimeout(()=>div.style.opacity=1,300) };
-        histList.appendChild(div);
-      });
-    }
-
-    function highlightItem(el){
-      el.animate([{transform:'scale(1)'},{transform:'scale(1.02)'},{transform:'scale(1)'}],{duration:260});
-    }
-
-    function pressKey(value){
-      clickSound();
-      if(value==='='|| value==='Enter'){ evaluateExpr(); return; }
-      if(value==='Backspace'){ state.expr = state.expr.slice(0,-1); render(); return; }
-      if(value==='C'){ state.expr=''; state.result='0'; render(); return; }
-      // else append
-      state.expr += value;
-      render();
-    }
-
-    function evaluateExpr(){
-      if(!state.expr) return;
-      // normalize characters
-      let e = state.expr.replace(/×/g,'*').replace(/÷/g,'/').replace(/−/g,'-').replace(/,/g,'');
-      try{
-        // restrict allowed chars to numbers, operators, parentheses, dot, spaces
-        if(!/^[0-9+\-*/(). %]+$/.test(e)) throw new Error('Invalid characters');
-        // percent handling: convert 50% to (50/100)
-        e = e.replace(/(\d+(?:\.\d+)?)%/g,'($1/100)');
-        const fn = new Function('return ('+e+')');
-        let res = fn();
-        if(typeof res === 'number' && !Number.isFinite(res)) throw new Error('Non-finite');
-        // round to sensible digits
-        if(typeof res === 'number'){
-          res = Math.round(res * 1e10) / 1e10;
-        }
-        state.result = res + '';
-        pushHistory(state.expr, state.result);
-        state.undoStack.push(state.expr);
-        state.redoStack=[];
-        state.expr='';
-        render();
-      }catch(err){
-        state.result = 'Error'; render();
-        console.warn('eval err', err);
-      }
-    }
-
-    // attach pad buttons
-    document.getElementById('pad').addEventListener('click', (ev)=>{
-      const btn = ev.target.closest('button'); if(!btn) return;
-      const val = btn.getAttribute('data-value');
-      const action = btn.getAttribute('data-action');
-      if(val) pressKey(val);
-      if(action){
-        if(action==='clear') { state.expr=''; state.result='0'; render(); clickSound(); }
-        if(action==='equals') { evaluateExpr(); clickSound(); }
-        if(action==='percent') { pressKey('%'); }
-        if(action==='toggle-sign'){ if(state.expr.startsWith('-')) state.expr = state.expr.slice(1); else state.expr = '-'+state.expr; render(); }
-      }
+  }
+  function renderHistory() {
+    historyList.innerHTML = '';
+    history.forEach(item => {
+      let li = document.createElement('li');
+      li.textContent = item;
+      historyList.appendChild(li);
     });
-
-    // keyboard support
-    window.addEventListener('keydown', (e)=>{
-      if(e.target.tagName==='INPUT' || e.target.tagName==='TEXTAREA') return; // don't intercept
-      if(e.key === 'Enter') { e.preventDefault(); evaluateExpr(); }
-      else if(e.key === 'Backspace') { state.expr = state.expr.slice(0,-1); render(); }
-      else if(e.key === 'c' && (e.ctrlKey||e.metaKey)) { state.expr=''; state.result='0'; render(); }
-      else if(/^[0-9+\-*/().%]$/.test(e.key)) { pressKey(e.key); }
-    });
-
-    // undo/redo
-    document.getElementById('undo').addEventListener('click', ()=>{
-      clickSound(); if(state.undoStack.length===0) return; const val=state.undoStack.pop(); state.redoStack.push(val); state.expr=val; render();
-    });
-    document.getElementById('redo').addEventListener('click', ()=>{ clickSound(); if(state.redoStack.length===0) return; const val=state.redoStack.pop(); state.undoStack.push(val); state.expr=val; render(); });
-
-    // copy
-    document.getElementById('copy').addEventListener('click', ()=>{ navigator.clipboard?.writeText(state.result+''); clickSound(); });
-
-    // clear all history
-    document.getElementById('clearAll').addEventListener('click', ()=>{ if(confirm('ลบประวัติทั้งหมด?')){ state.history=[]; saveHistory(); renderHistory(); } });
-
-    // search
-    document.getElementById('search').addEventListener('input', (e)=>{ renderHistory(e.target.value); });
-
-    // export/import
-    document.getElementById('export').addEventListener('click', ()=>{
-      const data = JSON.stringify(state.history, null, 2);
-      const blob = new Blob([data], {type:'application/json'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href=url; a.download='darkcalc_history.json'; a.click(); URL.revokeObjectURL(url);
-    });
-    document.getElementById('import').addEventListener('click', ()=>{ document.getElementById('fileIn').click(); });
-    document.getElementById('fileIn').addEventListener('change', (e)=>{
-      const f = e.target.files[0]; if(!f) return; const reader = new FileReader(); reader.onload = ()=>{ try{ const arr = JSON.parse(reader.result); if(Array.isArray(arr)){ state.history = arr.concat(state.history).slice(0,200); saveHistory(); renderHistory(); alert('นำเข้าเรียบร้อย'); } }catch(err){ alert('ไฟล์ไม่ถูกต้อง'); }}; reader.readAsText(f);
-    });
-
-    // init
-    load(); render();
-  </script></body>
+  }
+  function toggleHistory() {
+    let histPanel = document.getElementById('history');
+    histPanel.classList.toggle('show');
+  }
+</script></body>
 </html>
