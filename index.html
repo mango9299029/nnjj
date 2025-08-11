@@ -258,22 +258,22 @@
         <button type="button" data-action="clear" aria-label="ล้าง">C</button>
         <button type="button" data-action="backspace" aria-label="ลบตัวสุดท้าย">⌫</button>
         <button type="button" data-action="percent" aria-label="เปอร์เซ็นต์">%</button>
-        <button type="button" data-action="operator" data-value="/" aria-label="หาร">÷</button>
+        <button type="button" data-action="operator" data-value="/" aria-label="หาร" class="operator">÷</button>
 
         <button type="button" data-value="7">7</button>
         <button type="button" data-value="8">8</button>
         <button type="button" data-value="9">9</button>
-        <button type="button" data-action="operator" data-value="*" aria-label="คูณ">×</button>
+        <button type="button" data-action="operator" data-value="*" aria-label="คูณ" class="operator">×</button>
 
         <button type="button" data-value="4">4</button>
         <button type="button" data-value="5">5</button>
         <button type="button" data-value="6">6</button>
-        <button type="button" data-action="operator" data-value="-" aria-label="ลบ">−</button>
+        <button type="button" data-action="operator" data-value="-" aria-label="ลบ" class="operator">−</button>
 
         <button type="button" data-value="1">1</button>
         <button type="button" data-value="2">2</button>
         <button type="button" data-value="3">3</button>
-        <button type="button" data-action="operator" data-value="+" aria-label="บวก">+</button>
+        <button type="button" data-action="operator" data-value="+" aria-label="บวก" class="operator">+</button>
 
         <button type="button" data-value="0" class="zero">0</button>
         <button type="button" data-value=".">.</button>
@@ -283,10 +283,10 @@
     <aside class="history-panel" aria-label="ประวัติการคำนวณ">
       <div class="history-header">
         ประวัติ
-        <input type="search" placeholder="ค้นหา..." aria-label="ค้นหาประวัติ" class="search-input" id="search" />
       </div>
       <div class="history-list" id="historyList" tabindex="0"></div>
       <div class="controls">
+        <input type="search" placeholder="ค้นหา..." aria-label="ค้นหาประวัติ" class="search-input" id="search" />
         <button type="button" id="clearHistory">ลบทั้งหมด</button>
       </div>
     </aside>
@@ -298,21 +298,27 @@
   const historyList = document.getElementById('historyList');
   const searchInput = document.getElementById('search');
   const clearHistoryBtn = document.getElementById('clearHistory');
+  const buttonsContainer = document.querySelector('.buttons');
 
   let expression = '';
   let history = JSON.parse(localStorage.getItem('calculatorHistory') || '[]');
+  let resultDisplayed = false; // Flag to track if a result is on the display
 
   function safeEval(expr) {
     try {
+      if (expr.trim() === '') return null;
       let e = expr.replace(/÷/g, '/').replace(/×/g, '*').replace(/−/g, '-');
       e = e.replace(/(\d+(\.\d+)?)%/g, '($1/100)');
       if (!/^[0-9+\-*/().% ]+$/.test(e)) return null;
       const fn = new Function('return ' + e);
       let res = fn();
-      if (typeof res === 'number') res = Math.round(res * 1e10) / 1e10;
+      if (typeof res === 'number') {
+        res = Math.round(res * 1e10) / 1e10; // Handle floating-point inaccuracies
+        if (!isFinite(res)) return 'Error'; // Handle division by zero
+      }
       return res.toString();
     } catch {
-      return null;
+      return 'Error';
     }
   }
 
@@ -333,43 +339,32 @@
     filtered.forEach(item => {
       const div = document.createElement('div');
       div.className = 'history-item';
+      
+      div.innerHTML = `
+        <div class="history-expression">${item.expr}</div>
+        <div class="history-result">${item.res}</div>
+        <div class="history-actions">
+          <button type="button" title="ใช้สูตรนี้">ใช้</button>
+          <button type="button" title="คัดลอกผลลัพธ์">คัดลอก</button>
+          <button type="button" title="ลบรายการนี้">ลบ</button>
+        </div>
+      `;
 
-      const exprDiv = document.createElement('div');
-      exprDiv.className = 'history-expression';
-      exprDiv.textContent = item.expr;
-
-      const resDiv = document.createElement('div');
-      resDiv.className = 'history-result';
-      resDiv.textContent = item.res;
-
-      const actionsDiv = document.createElement('div');
-      actionsDiv.className = 'history-actions';
-
-      // ปุ่ม ใช้สูตรนี้
-      const useBtn = document.createElement('button');
-      useBtn.textContent = 'ใช้';
-      useBtn.title = 'ใช้สูตรนี้';
-      useBtn.onclick = () => {
+      div.querySelector('.history-actions button:nth-child(1)').onclick = () => {
         expression = item.expr;
+        resultDisplayed = false;
         updateDisplay();
       };
 
-      // ปุ่ม คัดลอกผลลัพธ์
-      const copyBtn = document.createElement('button');
-      copyBtn.textContent = 'คัดลอก';
-      copyBtn.title = 'คัดลอกผลลัพธ์';
-      copyBtn.onclick = () => {
+      div.querySelector('.history-actions button:nth-child(2)').onclick = () => {
         navigator.clipboard.writeText(item.res).then(() => {
-          copyBtn.textContent = '✓';
-          setTimeout(() => (copyBtn.textContent = 'คัดลอก'), 1000);
+          const btn = div.querySelector('.history-actions button:nth-child(2)');
+          btn.textContent = '✓';
+          setTimeout(() => (btn.textContent = 'คัดลอก'), 1000);
         });
       };
 
-      // ปุ่ม ลบรายการนี้
-      const delBtn = document.createElement('button');
-      delBtn.textContent = 'ลบ';
-      delBtn.title = 'ลบรายการนี้';
-      delBtn.onclick = () => {
+      div.querySelector('.history-actions button:nth-child(3)').onclick = () => {
         if (confirm('ลบรายการนี้หรือไม่?')) {
           history = history.filter(h => h !== item);
           saveHistory();
@@ -377,13 +372,6 @@
         }
       };
 
-      actionsDiv.appendChild(useBtn);
-      actionsDiv.appendChild(copyBtn);
-      actionsDiv.appendChild(delBtn);
-
-      div.appendChild(exprDiv);
-      div.appendChild(resDiv);
-      div.appendChild(actionsDiv);
       historyList.appendChild(div);
     });
   }
@@ -393,30 +381,35 @@
   }
 
   function addToHistory(expr, res) {
-    if (expr.trim() === '' || res === null) return;
+    if (expr.trim() === '' || res === null || res === 'Error') return;
     history.unshift({ expr, res });
     if (history.length > 300) history.pop();
     saveHistory();
     renderHistory(searchInput.value);
   }
 
-  document.querySelector('.buttons').addEventListener('click', e => {
-    if (e.target.tagName !== 'BUTTON') return;
+  buttonsContainer.addEventListener('click', e => {
+    const button = e.target.closest('button');
+    if (!button) return;
 
-    const action = e.target.getAttribute('data-action');
-    const value = e.target.getAttribute('data-value');
+    const action = button.getAttribute('data-action');
+    const value = button.getAttribute('data-value');
 
     if (value) {
-      expression += value;
+      if (resultDisplayed) {
+        expression = value;
+        resultDisplayed = false;
+      } else {
+        expression += value;
+      }
       updateDisplay();
       return;
     }
 
-    if (!action) return;
-
     switch (action) {
       case 'clear':
         expression = '';
+        resultDisplayed = false;
         updateDisplay();
         break;
       case 'backspace':
@@ -425,26 +418,34 @@
         break;
       case 'percent':
         expression += '%';
+        resultDisplayed = false;
         updateDisplay();
         break;
       case 'equals':
         const res = safeEval(expression);
-        if (res === null) {
+        if (res === 'Error') {
           display.textContent = 'Error';
           expression = '';
+          resultDisplayed = true;
           return;
         }
         display.textContent = res;
         addToHistory(expression, res);
-        expression = '';
+        expression = res;
+        resultDisplayed = true;
         break;
       case 'operator':
-        if (expression === '') return;
-        if (/[+\-*/.]$/.test(expression)) {
-          expression = expression.slice(0, -1) + value;
-        } else {
-          expression += value;
+        if (expression === '' && value === '-') {
+            expression = '-';
+        } else if (expression !== '') {
+          // Replace last operator if a new one is pressed
+          if (/[+\-*/.]$/.test(expression)) {
+            expression = expression.slice(0, -1) + value;
+          } else {
+            expression += value;
+          }
         }
+        resultDisplayed = false;
         updateDisplay();
         break;
     }
@@ -462,7 +463,28 @@
     }
   });
 
-  // โหลดประวัติตอนเริ่มต้น
+  // Handle keyboard input
+  document.addEventListener('keydown', e => {
+      const key = e.key;
+      const button = document.querySelector(`button[data-value="${key}"], button[data-action="${key === 'Enter' ? 'equals' : key === 'Backspace' ? 'backspace' : ''}"]`);
+      
+      if (key === 'Enter') {
+          document.querySelector('button[data-action="equals"]').click();
+          e.preventDefault();
+      } else if (key === 'Backspace') {
+          document.querySelector('button[data-action="backspace"]').click();
+          e.preventDefault();
+      } else if (key === 'Escape') {
+          document.querySelector('button[data-action="clear"]').click();
+          e.preventDefault();
+      } else if (/[0-9]/.test(key) || key === '.') {
+          document.querySelector(`button[data-value="${key}"]`).click();
+      } else if (['+', '-', '*', '/'].includes(key)) {
+          document.querySelector(`button[data-value="${key}"]`).click();
+      }
+  });
+
+  // Initial render
   renderHistory();
   updateDisplay();
 })();
