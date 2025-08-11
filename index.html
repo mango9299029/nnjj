@@ -1,159 +1,512 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="th">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Dark Calculator</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>เครื่องคิดเลขธีมมืดสวยหรู</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet" />
 <style>
+  :root {
+    --bg-dark: #121217;
+    --panel-dark: #1e1f29;
+    --accent: #7c5cff;
+    --text-light: #e1e2e7;
+    --text-muted: #888ba7;
+    --btn-bg: #2a2c3d;
+    --btn-hover: #3b3f58;
+    --shadow: rgba(124, 92, 255, 0.4);
+  }
+  * {
+    box-sizing: border-box;
+  }
   body {
-    margin: 0;
+    margin: 0; padding: 0;
+    background: var(--bg-dark);
     font-family: 'Poppins', sans-serif;
-    background: linear-gradient(135deg, #0f0f0f, #1c1c1c);
-    color: #fff;
+    color: var(--text-light);
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
-    overflow: hidden;
+    min-height: 100vh;
+    user-select: none;
+  }
+  .container {
+    display: flex;
+    gap: 30px;
+    max-width: 900px;
+    width: 100%;
+    padding: 20px;
   }
   .calculator {
-    background: rgba(30, 30, 30, 0.85);
-    backdrop-filter: blur(10px);
-    border-radius: 20px;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
-    padding: 20px;
+    background: var(--panel-dark);
+    border-radius: 18px;
+    box-shadow: 0 10px 30px var(--shadow);
+    padding: 25px 30px;
+    flex: 1 1 480px;
     display: flex;
     flex-direction: column;
-    width: 320px;
-    position: relative;
   }
   .display {
-    background: rgba(0,0,0,0.3);
-    padding: 15px;
-    border-radius: 10px;
-    font-size: 1.8em;
+    background: #222431;
+    border-radius: 14px;
+    padding: 20px 25px;
+    font-size: 2.6rem;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    color: var(--text-light);
+    min-height: 90px;
     text-align: right;
-    min-height: 50px;
-    margin-bottom: 15px;
-    box-shadow: inset 0 0 5px rgba(0,0,0,0.4);
+    overflow-wrap: break-word;
+    box-shadow: inset 0 0 10px rgba(124, 92, 255, 0.3);
+    margin-bottom: 24px;
   }
   .buttons {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
+    gap: 16px;
   }
   button {
-    padding: 15px;
+    background: var(--btn-bg);
     border: none;
-    border-radius: 12px;
-    background: rgba(255,255,255,0.05);
-    color: #fff;
-    font-size: 1.2em;
+    border-radius: 14px;
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--text-light);
+    padding: 18px 0;
     cursor: pointer;
-    transition: all 0.2s ease;
+    box-shadow: 0 4px 8px rgba(124, 92, 255, 0.2);
+    transition:
+      background 0.3s ease,
+      box-shadow 0.3s ease,
+      transform 0.15s ease;
+    user-select: none;
   }
   button:hover {
-    background: rgba(255,255,255,0.15);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(0, 255, 200, 0.4);
+    background: var(--btn-hover);
+    box-shadow: 0 6px 20px var(--shadow);
   }
-  .history {
-    position: absolute;
-    top: 0;
-    right: -250px;
-    width: 230px;
-    height: 100%;
-    background: rgba(20, 20, 20, 0.95);
-    backdrop-filter: blur(8px);
-    border-radius: 0 20px 20px 0;
-    padding: 15px;
+  button:active {
+    transform: scale(0.96);
+  }
+  .operator {
+    background: linear-gradient(135deg, #7c5cff, #6150d8);
+    box-shadow: 0 4px 12px #7c5cff88;
+  }
+  .operator:hover {
+    background: linear-gradient(135deg, #a18eff, #7c5cff);
+    box-shadow: 0 8px 25px #a18effbb;
+  }
+  .equal {
+    grid-column: span 1;
+    background: #4e57ff;
+    font-weight: 700;
+    box-shadow: 0 6px 16px #4e57ffbb;
+  }
+  .equal:hover {
+    background: #6677ff;
+    box-shadow: 0 8px 28px #6677ffcc;
+  }
+  .zero {
+    grid-column: span 2;
+  }
+  /* History Panel */
+  .history-panel {
+    background: var(--panel-dark);
+    border-radius: 18px;
+    box-shadow: 0 10px 30px var(--shadow);
+    width: 350px;
+    padding: 20px 25px;
+    display: flex;
+    flex-direction: column;
+    max-height: 600px;
+  }
+  .history-header {
+    font-weight: 700;
+    font-size: 1.6rem;
+    margin-bottom: 14px;
+    color: var(--accent);
+    user-select: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .history-list {
     overflow-y: auto;
-    transition: right 0.3s ease;
-    box-shadow: -2px 0 10px rgba(0,0,0,0.5);
+    flex-grow: 1;
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent) transparent;
   }
-  .history.show {
-    right: -250px;
-    right: 100%;
+  .history-list::-webkit-scrollbar {
+    width: 8px;
   }
-  .history h3 {
-    margin-top: 0;
-    font-weight: 500;
-    border-bottom: 1px solid rgba(255,255,255,0.2);
-    padding-bottom: 8px;
+  .history-list::-webkit-scrollbar-track {
+    background: transparent;
   }
-  .toggle-history {
-    position: absolute;
-    top: 10px;
-    left: -60px;
-    background: rgba(255,255,255,0.05);
-    padding: 10px;
+  .history-list::-webkit-scrollbar-thumb {
+    background-color: var(--accent);
     border-radius: 10px;
-    cursor: pointer;
-    transition: background 0.2s;
   }
-  .toggle-history:hover {
-    background: rgba(255,255,255,0.15);
+  .history-item {
+    background: #2f3249;
+    border-radius: 14px;
+    padding: 14px 18px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    user-select: text;
+  }
+  .history-expression {
+    color: var(--text-muted);
+    font-size: 1rem;
+    flex: 1 1 auto;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  .history-result {
+    font-weight: 700;
+    font-size: 1.1rem;
+    min-width: 80px;
+    text-align: right;
+    color: var(--accent);
+    user-select: text;
+  }
+  .history-actions {
+    display: flex;
+    gap: 8px;
+  }
+  .history-actions button {
+    background: transparent;
+    border: 1.5px solid var(--accent);
+    padding: 6px 10px;
+    font-size: 0.85rem;
+    border-radius: 12px;
+    color: var(--accent);
+    transition: background 0.3s ease, color 0.3s ease;
+  }
+  .history-actions button:hover {
+    background: var(--accent);
+    color: #121217;
+  }
+  /* Controls */
+  .controls {
+    margin-top: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .controls button {
+    background: transparent;
+    border: 1.5px solid var(--accent);
+    padding: 8px 14px;
+    font-size: 0.9rem;
+    border-radius: 14px;
+    color: var(--accent);
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s ease, color 0.3s ease;
+  }
+  .controls button:hover {
+    background: var(--accent);
+    color: #121217;
+  }
+  .search-input {
+    flex-grow: 1;
+    margin-right: 10px;
+    background: #222431;
+    border: none;
+    border-radius: 14px;
+    padding: 8px 14px;
+    font-size: 1rem;
+    color: var(--text-light);
+    box-shadow: inset 0 0 6px rgba(124, 92, 255, 0.3);
+    transition: background 0.3s ease;
+  }
+  .search-input::placeholder {
+    color: var(--text-muted);
+  }
+  .search-input:focus {
+    outline: none;
+    background: #333651;
+  }
+  /* Responsive */
+  @media (max-width: 860px) {
+    .container {
+      flex-direction: column;
+      align-items: center;
+    }
+    .history-panel {
+      width: 100%;
+      max-height: 300px;
+      margin-top: 24px;
+    }
+    .calculator {
+      width: 100%;
+      max-width: 480px;
+    }
   }
 </style>
 </head>
 <body>
-  <div class="calculator">
-    <div class="display" id="display"></div>
-    <div class="buttons">
-      <button onclick="appendValue('7')">7</button>
-      <button onclick="appendValue('8')">8</button>
-      <button onclick="appendValue('9')">9</button>
-      <button onclick="appendValue('/')">÷</button><button onclick="appendValue('4')">4</button>
-  <button onclick="appendValue('5')">5</button>
-  <button onclick="appendValue('6')">6</button>
-  <button onclick="appendValue('*')">×</button>
+  <div class="container" role="main" aria-label="เครื่องคิดเลขธีมมืดพร้อมประวัติ">
+    <section class="calculator" aria-label="เครื่องคิดเลข">
+      <div class="display" id="display" aria-live="polite" aria-atomic="true">0</div>
+      <div class="buttons" role="group" aria-label="ปุ่มเครื่องคิดเลข">
+        <button type="button" data-action="clear" aria-label="ล้าง">C</button>
+        <button type="button" data-action="backspace" aria-label="ลบตัวสุดท้าย">⌫</button>
+        <button type="button" data-action="percent" aria-label="เปอร์เซ็นต์">%</button>
+        <button type="button" data-action="operator" data-value="/" aria-label="หาร">÷</button>
 
-  <button onclick="appendValue('1')">1</button>
-  <button onclick="appendValue('2')">2</button>
-  <button onclick="appendValue('3')">3</button>
-  <button onclick="appendValue('-')">−</button>
+        <button type="button" data-value="7">7</button>
+        <button type="button" data-value="8">8</button>
+        <button type="button" data-value="9">9</button>
+        <button type="button" data-action="operator" data-value="*" aria-label="คูณ">×</button>
 
-  <button onclick="appendValue('0')">0</button>
-  <button onclick="appendValue('.')">.</button>
-  <button onclick="calculate()">=</button>
-  <button onclick="appendValue('+')">+</button>
-</div>
-<div class="toggle-history" onclick="toggleHistory()">📜</div>
-<div class="history" id="history">
-  <h3>History</h3>
-  <ul id="history-list"></ul>
-</div>
+        <button type="button" data-value="4">4</button>
+        <button type="button" data-value="5">5</button>
+        <button type="button" data-value="6">6</button>
+        <button type="button" data-action="operator" data-value="-" aria-label="ลบ">−</button>
 
-  </div><script>
-  let display = document.getElementById('display');
-  let historyList = document.getElementById('history-list');
-  let history = [];
+        <button type="button" data-value="1">1</button>
+        <button type="button" data-value="2">2</button>
+        <button type="button" data-value="3">3</button>
+        <button type="button" data-action="operator" data-value="+" aria-label="บวก">+</button>
 
-  function appendValue(val) {
-    display.textContent += val;
-  }
-  function calculate() {
-    try {
-      let expression = display.textContent;
-      let result = eval(expression);
-      display.textContent = result;
-      history.unshift(`${expression} = ${result}`);
-      renderHistory();
-    } catch {
-      display.textContent = 'Error';
-    }
-  }
-  function renderHistory() {
-    historyList.innerHTML = '';
-    history.forEach(item => {
-      let li = document.createElement('li');
-      li.textContent = item;
-      historyList.appendChild(li);
+        <button type="button" data-value="0" class="zero">0</button>
+        <button type="button" data-value=".">.</button>
+        <button type="button" data-action="equals" class="equal" aria-label="เท่ากับ">=</button>
+      </div>
+    </section>
+    <aside class="history-panel" aria-label="ประวัติการคำนวณ">
+      <div class="history-header">
+        ประวัติ
+        <input type="search" placeholder="ค้นหา..." aria-label="ค้นหาประวัติ" class="search-input" id="search" />
+      </div>
+      <div class="history-list" id="historyList" tabindex="0"></div>
+      <div class="controls">
+        <button type="button" id="clearHistory">ลบทั้งหมด</button>
+        <button type="button" id="exportHistory">ส่งออก</button>
+        <button type="button" id="importHistory">นำเข้า</button>
+        <input type="file" id="importFile" accept="application/json" style="display:none" />
+      </div>
+    </aside>
+  </div>
+
+<script>
+  (() => {
+    const display = document.getElementById('display');
+    const historyList = document.getElementById('historyList');
+    const searchInput = document.getElementById('search');
+    const clearHistoryBtn = document.getElementById('clearHistory');
+    const exportHistoryBtn = document.getElementById('exportHistory');
+    const importHistoryBtn = document.getElementById('importHistory');
+    const importFileInput = document.getElementById('importFile');
+
+    let expression = '';
+    let history = JSON.parse(localStorage.getItem('darkCalcHistory') || '[]');
+
+    // Helpers
+    const safeEval = (expr) => {
+      try {
+        let e = expr.replace(/×/g, '*').replace(/÷/g, '/').replace(/−/g, '-');
+        e = e.replace(/(\d+(\.\d+)?)%/g, '($1/100)');
+        if (!/^[0-9+\-*/().% ]+$/.test(e)) return null;
+        const fn = new Function('return ' + e);
+        let res = fn();
+        if (typeof res === 'number') res = Math.round(res * 1e10) / 1e10;
+        return res.toString();
+      } catch {
+        return null;
+      }
+    };
+
+    const updateDisplay = () => {
+      display.textContent = expression || '0';
+    };
+
+    const renderHistory = (filter = '') => {
+      historyList.innerHTML = '';
+      const filtered = history.filter(h =>
+        h.expr.toLowerCase().includes(filter.toLowerCase()) ||
+        h.res.toLowerCase().includes(filter.toLowerCase())
+      );
+      if (filtered.length === 0) {
+        historyList.innerHTML = `<div style="color: var(--text-muted); text-align:center; margin-top:20px;">ไม่มีประวัติ</div>`;
+        return;
+      }
+      filtered.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'history-item';
+
+        const exprDiv = document.createElement('div');
+        exprDiv.className = 'history-expression';
+        exprDiv.textContent = item.expr;
+
+        const resDiv = document.createElement('div');
+        resDiv.className = 'history-result';
+        resDiv.textContent = item.res;
+
+        const actionsDiv = document.createElement('div');
+        actionsDiv.className = 'history-actions';
+
+        const useBtn = document.createElement('button');
+        useBtn.textContent = 'Use';
+        useBtn.title = 'ใช้สูตรนี้';
+        useBtn.onclick = () => {
+          expression = item.expr;
+          updateDisplay();
+        };
+
+        const recalcBtn = document.createElement('button');
+        recalcBtn.textContent = 'Recalc';
+        recalcBtn.title = 'คำนวณใหม่';
+        recalcBtn.onclick = () => {
+          const newRes = safeEval(item.expr);
+          if (newRes !== null) {
+            item.res = newRes;
+            saveHistory();
+            renderHistory(searchInput.value);
+            expression = newRes;
+            updateDisplay();
+          }
+        };
+
+        const copyBtn = document.createElement('button');
+        copyBtn.textContent = 'Copy';
+        copyBtn.title = 'คัดลอกผลลัพธ์';
+        copyBtn.onclick = () => {
+          navigator.clipboard.writeText(item.res);
+          copyBtn.textContent = '✓';
+          setTimeout(() => copyBtn.textContent = 'Copy', 1000);
+        };
+
+        const delBtn = document.createElement('button');
+        delBtn.textContent = 'Del';
+        delBtn.title = 'ลบรายการนี้';
+        delBtn.onclick = () => {
+          history = history.filter(h => h !== item);
+          saveHistory();
+          renderHistory(searchInput.value);
+        };
+
+        actionsDiv.appendChild(useBtn);
+        actionsDiv.appendChild(recalcBtn);
+        actionsDiv.appendChild(copyBtn);
+        actionsDiv.appendChild(delBtn);
+
+        div.appendChild(exprDiv);
+        div.appendChild(resDiv);
+        div.appendChild(actionsDiv);
+        historyList.appendChild(div);
+      });
+    };
+
+    const saveHistory = () => {
+      localStorage.setItem('darkCalcHistory', JSON.stringify(history));
+    };
+
+    const addToHistory = (expr, res) => {
+      history.unshift({ expr, res });
+      if (history.length > 300) history.pop();
+      saveHistory();
+      renderHistory(searchInput.value);
+    };
+
+    // Event handlers
+    document.querySelector('.buttons').addEventListener('click', e => {
+      if (e.target.tagName !== 'BUTTON') return;
+
+      const action = e.target.getAttribute('data-action');
+      const value = e.target.getAttribute('data-value');
+
+      if (value) {
+        expression += value;
+        updateDisplay();
+        return;
+      }
+
+      if (!action) return;
+
+      if (action === 'clear') {
+        expression = '';
+        updateDisplay();
+        return;
+      }
+      if (action === 'backspace') {
+        expression = expression.slice(0, -1);
+        updateDisplay();
+        return;
+      }
+      if (action === 'percent') {
+        expression += '%';
+        updateDisplay();
+        return;
+      }
+      if (action === 'equals') {
+        const res = safeEval(expression);
+        if (res === null) {
+          display.textContent = 'Error';
+          expression = '';
+          return;
+        }
+        display.textContent = res;
+        addToHistory(expression, res);
+        expression = '';
+      }
+      if (action === 'operator') {
+        // Prevent operators first or duplicate operators
+        if (expression === '') return;
+        if (/[+\-*/.]$/.test(expression)) {
+          expression = expression.slice(0, -1) + value;
+        } else {
+          expression += value;
+        }
+        updateDisplay();
+      }
     });
-  }
-  function toggleHistory() {
-    let histPanel = document.getElementById('history');
-    histPanel.classList.toggle('show');
-  }
-</script></body>
-</html
+
+    searchInput.addEventListener('input', e => {
+      renderHistory(e.target.value);
+    });
+
+    clearHistoryBtn.addEventListener('click', () => {
+      if (confirm('ต้องการลบประวัติทั้งหมดหรือไม่?')) {
+        history = [];
+        saveHistory();
+        renderHistory();
+      }
+    });
+
+    exportHistoryBtn.addEventListener('click', () => {
+      const dataStr = JSON.stringify(history, null, 2);
+      const blob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'calculator_history.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    importHistoryBtn.addEventListener('click', () => {
+      importFileInput.click();
+    });
+
+    importFileInput.addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const imported = JSON.parse(reader.result);
+          if (!Array.isArray(imported)) throw new Error();
+          history = imported.concat(history).slice(0, 300);
+          saveHistory();
+          renderHistory();
+          alert('นำเข้าประวัติเรียบร้อยแล้ว');
+        } catch {
+          alert('ไฟล์นำเข้าไม่ถูกต้อง');
+        }
+      };
