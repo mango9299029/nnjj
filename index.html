@@ -302,7 +302,7 @@
 
   let expression = '';
   let history = JSON.parse(localStorage.getItem('calculatorHistory') || '[]');
-  let resultDisplayed = false; // Flag to track if a result is on the display
+  let resultDisplayed = false; 
 
   function safeEval(expr) {
     try {
@@ -313,8 +313,8 @@
       const fn = new Function('return ' + e);
       let res = fn();
       if (typeof res === 'number') {
-        res = Math.round(res * 1e10) / 1e10; // Handle floating-point inaccuracies
-        if (!isFinite(res)) return 'Error'; // Handle division by zero
+        res = Math.round(res * 1e10) / 1e10; 
+        if (!isFinite(res)) return 'Error';
       }
       return res.toString();
     } catch {
@@ -438,7 +438,6 @@
         if (expression === '' && value === '-') {
             expression = '-';
         } else if (expression !== '') {
-          // Replace last operator if a new one is pressed
           if (/[+\-*/.]$/.test(expression)) {
             expression = expression.slice(0, -1) + value;
           } else {
@@ -463,10 +462,8 @@
     }
   });
 
-  // Handle keyboard input
   document.addEventListener('keydown', e => {
       const key = e.key;
-      const button = document.querySelector(`button[data-value="${key}"], button[data-action="${key === 'Enter' ? 'equals' : key === 'Backspace' ? 'backspace' : ''}"]`);
       
       if (key === 'Enter') {
           document.querySelector('button[data-action="equals"]').click();
@@ -478,13 +475,14 @@
           document.querySelector('button[data-action="clear"]').click();
           e.preventDefault();
       } else if (/[0-9]/.test(key) || key === '.') {
-          document.querySelector(`button[data-value="${key}"]`).click();
+          const button = document.querySelector(`button[data-value="${key}"]`);
+          if (button) button.click();
       } else if (['+', '-', '*', '/'].includes(key)) {
-          document.querySelector(`button[data-value="${key}"]`).click();
+          const button = document.querySelector(`button[data-value="${key}"]`);
+          if (button) button.click();
       }
   });
 
-  // Initial render
   renderHistory();
   updateDisplay();
 })();
