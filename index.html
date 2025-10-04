@@ -13,6 +13,7 @@
         padding: 0;
         box-sizing: border-box;
         font-family: 'Itim', cursive;
+        -webkit-tap-highlight-color: transparent; /* ป้องกันแสงวาบเมื่อแตะปุ่มบนมือถือ */
       }
 
       body {
@@ -117,7 +118,6 @@
         <button onclick="startGame()">เริ่มใหม่</button>
       </div>
 
-      <!-- D-Pad ปุ่มควบคุมสำหรับมือถือ -->
       <div class="dpad">
         <div class="empty"></div>
         <button id="up">⬆️</button>
@@ -254,15 +254,22 @@
         if (e.key === 'ArrowRight' && dx !== -1) { dx = 1; dy = 0; }
       });
 
-      // 📱 Touch buttons control
-      document.getElementById('up').addEventListener('click', () => { if (dy !== 1) { dx = 0; dy = -1; } });
-      document.getElementById('down').addEventListener('click', () => { if (dy !== -1) { dx = 0; dy = 1; } });
-      document.getElementById('left').addEventListener('click', () => { if (dx !== 1) { dx = -1; dy = 0; } });
-      document.getElementById('right').addEventListener('click', () => { if (dx !== -1) { dx = 1; dy = 0; } });
+      // 📱 Touch buttons control - *** UPDATED FOR BETTER RESPONSIVENESS ***
+      // ใช้ 'touchstart' แทน 'click' เพื่อการตอบสนองที่เร็วขึ้น
+      function handleTouch(event, newDx, newDy, oppositeDx, oppositeDy) {
+        event.preventDefault(); // ป้องกันการซูมหรือ scroll โดยไม่ได้ตั้งใจ
+        if (dx !== oppositeDx && dy !== oppositeDy) {
+          dx = newDx;
+          dy = newDy;
+        }
+      }
+
+      document.getElementById('up').addEventListener('touchstart', (e) => handleTouch(e, 0, -1, 0, 1));
+      document.getElementById('down').addEventListener('touchstart', (e) => handleTouch(e, 0, 1, 0, -1));
+      document.getElementById('left').addEventListener('touchstart', (e) => handleTouch(e, -1, 0, 1, 0));
+      document.getElementById('right').addEventListener('touchstart', (e) => handleTouch(e, 1, 0, -1, 0));
 
       startGame();
     </script>
   </body>
 </html>
-เกิน2.txt
-8 KB
