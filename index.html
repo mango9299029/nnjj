@@ -32,7 +32,7 @@
         border-radius: 20px;
         padding: 20px;
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-        position: relative; /* เพิ่มเพื่อให้ .game-over อยู่กึ่งกลางอย่างถูกต้อง */
+        position: relative;
       }
 
       .score {
@@ -148,7 +148,7 @@
       const gridSize = 20;
       const tileCount = canvas.width / gridSize;
       let snake, food, dx, dy, score, isGameRunning, lastUpdateTime;
-      const frameInterval = 100;
+      const frameInterval = 120; // ลดความเร็วลง
 
       // ฟังก์ชันสำหรับรีเซ็ตและเริ่มเกมใหม่
       function resetGame() {
@@ -178,14 +178,14 @@
       function drawSnake() {
         ctx.fillStyle = '#22d3ee';
         snake.forEach(part => {
-          ctx.fillRect(part.x * gridSize, part.y * gridSize, gridSize - 2, gridSize - 2);
+          ctx.fillRect(part.x * gridSize, part.y * gridSize, gridSize - 1, gridSize - 1); // เพิ่มขนาดงู
         });
       }
 
       // ฟังก์ชันวาดผลไม้
       function drawFood() {
         ctx.fillStyle = '#f87171';
-        const size = gridSize * 0.8;
+        const size = gridSize; // เพิ่มขนาดผลไม้
         ctx.beginPath();
         ctx.arc(
           food.x * gridSize + gridSize / 2,
