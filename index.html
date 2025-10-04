@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-    <title>🐍 Snake Game 🥭</title>
+    <title>🐍 เกมงู 🥭</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Itim&display=swap" rel="stylesheet" />
 
@@ -33,6 +33,7 @@
         padding: 20px;
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         position: relative;
+        max-width: 90vw;
       }
 
       .score {
@@ -71,18 +72,19 @@
 
       .dpad {
         display: grid;
-        grid-template-columns: 60px 60px 60px;
-        grid-template-rows: 60px 60px 60px;
-        justify-content: center;
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(3, 1fr);
+        max-width: 200px;
+        margin: 16px auto 0;
         gap: 6px;
-        margin-top: 16px;
       }
 
       .dpad button {
-        width: 60px;
+        width: 100%;
         height: 60px;
         font-size: 24px;
         border-radius: 12px;
+        padding: 0;
       }
 
       .dpad .empty {
@@ -99,11 +101,12 @@
         padding: 30px;
         border-radius: 15px;
         text-align: center;
+        min-width: 250px;
       }
 
       @media (max-width: 480px) {
         .dpad button {
-          width: 50px;
+          width: 100%;
           height: 50px;
           font-size: 20px;
         }
@@ -132,7 +135,7 @@
       </div>
 
       <div class="game-over" id="gameOver">
-        <h2>Game Over!</h2>
+        <h2>จบเกม!</h2>
         <p>คะแนนของคุณ: <span id="finalScore">0</span></p>
         <button onclick="startGame()">เล่นอีกครั้ง</button>
       </div>
@@ -147,13 +150,13 @@
 
       const gridSize = 20;
       const tileCount = canvas.width / gridSize;
-      const frameInterval = 160; // 🔸 ช้าลงหน่อย (เดิม 100)
+      const frameInterval = 120; // ปรับให้ช้าลงเล็กน้อยเพื่อให้เล่นง่าย
 
       let snake, food, dx, dy, score, isGameRunning, lastUpdateTime;
 
       function resetGame() {
         snake = [{ x: 10, y: 10 }];
-        dx = 1; // 🔸 เริ่มต้นให้เดินขวาทันที
+        dx = 1; 
         dy = 0;
         score = 0;
         scoreElement.textContent = score;
@@ -163,10 +166,14 @@
       }
 
       function randomFood() {
-        return {
-          x: Math.floor(Math.random() * tileCount),
-          y: Math.floor(Math.random() * tileCount)
-        };
+        let newFood;
+        do {
+          newFood = {
+            x: Math.floor(Math.random() * tileCount),
+            y: Math.floor(Math.random() * tileCount)
+          };
+        } while (snake.some(part => part.x === newFood.x && part.y === newFood.y)); // ตรวจสอบไม่ให้ผลไม้อยู่บนตัวงู
+        return newFood;
       }
 
       function drawSnake() {
@@ -178,7 +185,7 @@
 
       function drawFood() {
         ctx.fillStyle = '#f87171';
-        const size = gridSize * 0.8; // 🔸 ผลไม้ใหญ่ขึ้นเล็กน้อย
+        const size = gridSize * 0.8;
         ctx.beginPath();
         ctx.arc(
           food.x * gridSize + gridSize / 2,
@@ -256,18 +263,11 @@
       });
 
       // 📱 Touch controls
-      function handleTouch(event, newDx, newDy, oppositeDx, oppositeDy) {
-        event.preventDefault();
-        if (dx !== oppositeDx && dy !== oppositeDy) {
-          dx = newDx;
-          dy = newDy;
-        }
-      }
-
-      document.getElementById('up').addEventListener('touchstart', e => handleTouch(e, 0, -1, 0, 1));
-      document.getElementById('down').addEventListener('touchstart', e => handleTouch(e, 0, 1, 0, -1));
-      document.getElementById('left').addEventListener('touchstart', e => handleTouch(e, -1, 0, 1, 0));
-      document.getElementById('right').addEventListener('touchstart', e => handleTouch(e, 1, 0, -1, 0));
+      // ใช้ touchend แทน touchstart เพื่อป้องกันการสัมผัสโดยไม่ได้ตั้งใจ
+      document.getElementById('up').addEventListener('touchend', e => { if (dy !== 1) { dx = 0; dy = -1; } });
+      document.getElementById('down').addEventListener('touchend', e => { if (dy !== -1) { dx = 0; dy = 1; } });
+      document.getElementById('left').addEventListener('touchend', e => { if (dx !== 1) { dx = -1; dy = 0; } });
+      document.getElementById('right').addEventListener('touchend', e => { if (dx !== -1) { dx = 1; dy = 0; } });
 
       startGame();
     </script>
