@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-    <title>🐍 เกมงู 🥭</title>
+    <title>🐍 เกมงู (พร้อมเล่นบนมือถือ)</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Itim&display=swap" rel="stylesheet" />
 
@@ -13,7 +13,7 @@
         padding: 0;
         box-sizing: border-box;
         font-family: 'Itim', cursive;
-        -webkit-tap-highlight-color: transparent;
+        -webkit-tap-highlight-color: transparent; /* ป้องกันแสงวาบเมื่อแตะปุ่มบนมือถือ */
       }
 
       body {
@@ -32,8 +32,7 @@
         border-radius: 20px;
         padding: 20px;
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-        position: relative;
-        max-width: 90vw;
+        position: relative; /* เพิ่มเพื่อให้ .game-over อยู่กึ่งกลางอย่างถูกต้อง */
       }
 
       .score {
@@ -72,19 +71,18 @@
 
       .dpad {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        grid-template-rows: repeat(3, 1fr);
-        max-width: 200px;
-        margin: 16px auto 0;
+        grid-template-columns: 60px 60px 60px;
+        grid-template-rows: 60px 60px 60px;
+        justify-content: center;
         gap: 6px;
+        margin-top: 16px;
       }
 
       .dpad button {
-        width: 100%;
+        width: 60px;
         height: 60px;
         font-size: 24px;
         border-radius: 12px;
-        padding: 0;
       }
 
       .dpad .empty {
@@ -101,12 +99,11 @@
         padding: 30px;
         border-radius: 15px;
         text-align: center;
-        min-width: 250px;
       }
 
       @media (max-width: 480px) {
         .dpad button {
-          width: 100%;
+          width: 50px;
           height: 50px;
           font-size: 20px;
         }
@@ -150,14 +147,13 @@
 
       const gridSize = 20;
       const tileCount = canvas.width / gridSize;
-      const frameInterval = 120; 
-
       let snake, food, dx, dy, score, isGameRunning, lastUpdateTime;
+      const frameInterval = 100;
 
       // 🔁 ฟังก์ชันสำหรับรีเซ็ตและเริ่มเกมใหม่
       function resetGame() {
         snake = [{ x: 10, y: 10 }];
-        dx = 1; 
+        dx = 0;
         dy = 0;
         score = 0;
         scoreElement.textContent = score;
@@ -166,7 +162,7 @@
         lastUpdateTime = 0;
       }
 
-      // 🍎 ฟังก์ชันสุ่มตำแหน่งผลไม้ใหม่
+      // 🍎 ฟังก์ชันสุ่มตำแหน่งผลไม้ใหม่และป้องกันการทับกับตัวงู
       function randomFood() {
         let newFood;
         do {
@@ -218,13 +214,16 @@
       // 💥 ฟังก์ชันตรวจสอบการชน
       function checkCollision() {
         const head = snake[0];
-        return (
+        if (
           head.x < 0 ||
           head.y < 0 ||
           head.x >= tileCount ||
           head.y >= tileCount ||
           snake.slice(1).some(part => part.x === head.x && part.y === head.y)
-        );
+        ) {
+          return true;
+        }
+        return false;
       }
 
       // 🎨 ฟังก์ชันวาดและอัปเดตเกม
@@ -273,10 +272,10 @@
       });
 
       // 👆 การควบคุมด้วยการสัมผัส (Touch)
-      document.getElementById('up').addEventListener('touchend', e => { e.preventDefault(); if (dy !== 1) { dx = 0; dy = -1; } });
-      document.getElementById('down').addEventListener('touchend', e => { e.preventDefault(); if (dy !== -1) { dx = 0; dy = 1; } });
-      document.getElementById('left').addEventListener('touchend', e => { e.preventDefault(); if (dx !== 1) { dx = -1; dy = 0; } });
-      document.getElementById('right').addEventListener('touchend', e => { e.preventDefault(); if (dx !== -1) { dx = 1; dy = 0; } });
+      document.getElementById('up').addEventListener('touchstart', (e) => { e.preventDefault(); if (dy !== 1) { dx = 0; dy = -1; } });
+      document.getElementById('down').addEventListener('touchstart', (e) => { e.preventDefault(); if (dy !== -1) { dx = 0; dy = 1; } });
+      document.getElementById('left').addEventListener('touchstart', (e) => { e.preventDefault(); if (dx !== 1) { dx = -1; dy = 0; } });
+      document.getElementById('right').addEventListener('touchstart', (e) => { e.preventDefault(); if (dx !== -1) { dx = 1; dy = 0; } });
 
       startGame();
     </script>
