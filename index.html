@@ -45,7 +45,7 @@
         border-radius: 10px;
         background: #2a2a2a;
         width: 100%;
-        max-width: 390px;
+        max-width: 400px;
         height: auto;
       }
 
@@ -113,7 +113,7 @@
   <body>
     <div class="game-container">
       <div class="score">คะแนน: <span id="score">0</span></div>
-      <canvas id="gameCanvas" width="400" height="400"></canvas>
+      <canvas id="gameCanvas" width="390" height="390"></canvas>
 
       <div class="controls">
         <button onclick="startGame()">เริ่มใหม่</button>
@@ -148,11 +148,11 @@
       const gridSize = 30;
       const tileCount = canvas.width / gridSize;
       let snake, food, dx, dy, score, isGameRunning, lastUpdateTime;
-      const frameInterval = 175; // ปรับความเร็วงู
+      const frameInterval = 175;
 
       // ฟังก์ชันสำหรับรีเซ็ตและเริ่มเกมใหม่
       function resetGame() {
-        snake = [{ x: 10, y: 10 }];
+        snake = [{ x: 6, y: 6 }]; // แก้ไขตำแหน่งเริ่มต้น
         dx = 0;
         dy = 0;
         score = 0;
@@ -178,14 +178,14 @@
       function drawSnake() {
         ctx.fillStyle = '#22d3ee';
         snake.forEach(part => {
-          ctx.fillRect(part.x * gridSize, part.y * gridSize, gridSize - 1, gridSize - 1); // เพิ่มขนาดงู
+          ctx.fillRect(part.x * gridSize, part.y * gridSize, gridSize, gridSize);
         });
       }
 
       // ฟังก์ชันวาดผลไม้
       function drawFood() {
         ctx.fillStyle = '#f87171';
-        const size = gridSize; // เพิ่มขนาดผลไม้
+        const size = gridSize;
         ctx.beginPath();
         ctx.arc(
           food.x * gridSize + gridSize / 2,
