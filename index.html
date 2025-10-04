@@ -148,7 +148,7 @@
       const gridSize = 30;
       const tileCount = canvas.width / gridSize;
       let snake, food, dx, dy, score, isGameRunning, lastUpdateTime;
-      const frameInterval = 200;
+      const frameInterval = 10;
 
       // ฟังก์ชันสำหรับรีเซ็ตและเริ่มเกมใหม่
       function resetGame() {
@@ -203,7 +203,7 @@
         snake.unshift(head);
 
         if (head.x === food.x && head.y === food.y) {
-          score += 7;
+          score += 1;
           scoreElement.textContent = score;
           food = randomFood();
         } else {
