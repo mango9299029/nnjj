@@ -150,10 +150,11 @@
 
       const gridSize = 20;
       const tileCount = canvas.width / gridSize;
-      const frameInterval = 120; // ปรับให้ช้าลงเล็กน้อยเพื่อให้เล่นง่าย
+      const frameInterval = 120; 
 
       let snake, food, dx, dy, score, isGameRunning, lastUpdateTime;
 
+      // 🔁 ฟังก์ชันสำหรับรีเซ็ตและเริ่มเกมใหม่
       function resetGame() {
         snake = [{ x: 10, y: 10 }];
         dx = 1; 
@@ -165,6 +166,7 @@
         lastUpdateTime = 0;
       }
 
+      // 🍎 ฟังก์ชันสุ่มตำแหน่งผลไม้ใหม่
       function randomFood() {
         let newFood;
         do {
@@ -172,10 +174,11 @@
             x: Math.floor(Math.random() * tileCount),
             y: Math.floor(Math.random() * tileCount)
           };
-        } while (snake.some(part => part.x === newFood.x && part.y === newFood.y)); // ตรวจสอบไม่ให้ผลไม้อยู่บนตัวงู
+        } while (snake.some(part => part.x === newFood.x && part.y === newFood.y));
         return newFood;
       }
 
+      // 🐍 ฟังก์ชันวาดงู
       function drawSnake() {
         ctx.fillStyle = '#22d3ee';
         snake.forEach(part => {
@@ -183,6 +186,7 @@
         });
       }
 
+      // 🍎 ฟังก์ชันวาดผลไม้
       function drawFood() {
         ctx.fillStyle = '#f87171';
         const size = gridSize * 0.8;
@@ -197,6 +201,7 @@
         ctx.fill();
       }
 
+      // ➡️ ฟังก์ชันเคลื่อนที่งู
       function moveSnake() {
         const head = { x: snake[0].x + dx, y: snake[0].y + dy };
         snake.unshift(head);
@@ -210,6 +215,7 @@
         }
       }
 
+      // 💥 ฟังก์ชันตรวจสอบการชน
       function checkCollision() {
         const head = snake[0];
         return (
@@ -221,6 +227,7 @@
         );
       }
 
+      // 🎨 ฟังก์ชันวาดและอัปเดตเกม
       function drawGame() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         moveSnake();
@@ -232,6 +239,7 @@
         drawSnake();
       }
 
+      // 🔄 ลูปหลักของเกม
       function gameLoop(timestamp) {
         if (!isGameRunning) return;
         const delta = timestamp - lastUpdateTime;
@@ -242,19 +250,21 @@
         requestAnimationFrame(gameLoop);
       }
 
+      // ▶️ ฟังก์ชันเริ่มเกม
       function startGame() {
         resetGame();
         gameOverElement.style.display = 'none';
         requestAnimationFrame(gameLoop);
       }
 
+      // 🛑 ฟังก์ชันจบเกม
       function endGame() {
         isGameRunning = false;
         finalScore.textContent = score;
         gameOverElement.style.display = 'block';
       }
 
-      // 🎮 Keyboard controls
+      // ⌨️ การควบคุมด้วยคีย์บอร์ด
       document.addEventListener('keydown', e => {
         if (e.key === 'ArrowUp' && dy !== 1) { dx = 0; dy = -1; }
         if (e.key === 'ArrowDown' && dy !== -1) { dx = 0; dy = 1; }
@@ -262,12 +272,11 @@
         if (e.key === 'ArrowRight' && dx !== -1) { dx = 1; dy = 0; }
       });
 
-      // 📱 Touch controls
-      // ใช้ touchend แทน touchstart เพื่อป้องกันการสัมผัสโดยไม่ได้ตั้งใจ
-      document.getElementById('up').addEventListener('touchend', e => { if (dy !== 1) { dx = 0; dy = -1; } });
-      document.getElementById('down').addEventListener('touchend', e => { if (dy !== -1) { dx = 0; dy = 1; } });
-      document.getElementById('left').addEventListener('touchend', e => { if (dx !== 1) { dx = -1; dy = 0; } });
-      document.getElementById('right').addEventListener('touchend', e => { if (dx !== -1) { dx = 1; dy = 0; } });
+      // 👆 การควบคุมด้วยการสัมผัส (Touch)
+      document.getElementById('up').addEventListener('touchend', e => { e.preventDefault(); if (dy !== 1) { dx = 0; dy = -1; } });
+      document.getElementById('down').addEventListener('touchend', e => { e.preventDefault(); if (dy !== -1) { dx = 0; dy = 1; } });
+      document.getElementById('left').addEventListener('touchend', e => { e.preventDefault(); if (dx !== 1) { dx = -1; dy = 0; } });
+      document.getElementById('right').addEventListener('touchend', e => { e.preventDefault(); if (dx !== -1) { dx = 1; dy = 0; } });
 
       startGame();
     </script>
