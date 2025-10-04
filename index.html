@@ -63,6 +63,83 @@
 
       .controls {
         margin-top: 24px;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        gap: 12px;
+        background: #23243a;
+        border-radius: 14px;
+        padding: 16px 10px 10px 10px;
+        box-shadow: 0 2px 8px var(--shadow);
+      }
+
+      .controls label {
+        color: var(--text-light);
+        font-size: 1.05rem;
+        margin-bottom: 0;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: #23243a;
+        border-radius: 8px;
+        padding: 4px 8px;
+        box-shadow: 0 1px 4px #0002;
+      }
+
+      .controls .input-group {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        background: #181828;
+        border-radius: 6px;
+        padding: 2px 4px;
+      }
+
+      .controls input[type="range"] {
+        accent-color: var(--accent);
+        width: 90px;
+        margin: 0 6px;
+      }
+
+      .controls input[type="number"] {
+        width: 54px;
+        border-radius: 6px;
+        border: 1px solid #444;
+        background: #181828;
+        color: var(--text-light);
+        padding: 2px 4px;
+        font-size: 1rem;
+        text-align: center;
+        margin: 0 2px;
+      }
+
+      .controls .step-btn {
+        background: var(--btn-bg);
+        color: var(--accent);
+        border: none;
+        border-radius: 4px;
+        width: 28px;
+        height: 28px;
+        font-size: 1.2rem;
+        cursor: pointer;
+        transition: background 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .controls .step-btn:hover {
+        background: var(--btn-hover);
+      }
+
+      .controls button {
+        margin: 0 4px;
+        min-width: 44px;
+        min-height: 44px;
+        font-size: 1.1rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
       }
 
       button {
@@ -139,7 +216,27 @@
       <canvas id="gameCanvas" width="390" height="390"></canvas>
 
       <div class="controls">
-        <button onclick="startGame()">เริ่มใหม่</button>
+        <label>
+          <span>ความเร็ว</span>
+          <div class="input-group">
+            <button class="step-btn" id="speedDown" tabindex="-1">-</button>
+            <input id="speedInput" type="number" min="50" max="500" value="200" step="10">
+            <button class="step-btn" id="speedUp" tabindex="-1">+</button>
+          </div>
+          <span id="speedValue">ms</span>
+        </label>
+        <label>
+          <span>จำนวนผลไม้</span>
+          <div class="input-group">
+            <button class="step-btn" id="foodDown" tabindex="-1">-</button>
+            <input id="foodInput" type="number" min="1" max="10" value="1">
+            <button class="step-btn" id="foodUp" tabindex="-1">+</button>
+          </div>
+        </label>
+        <button id="pauseBtn" title="หยุด/เล่นต่อ" style="background:var(--accent);color:#fff;">
+          <span id="pauseIcon">⏸️</span>
+        </button>
+        <button onclick="startGame()" title="เริ่มใหม่">🔄</button>
       </div>
 
       <div class="dpad">
@@ -168,10 +265,24 @@
       const gameOverElement = document.getElementById('gameOver');
       const finalScore = document.getElementById('finalScore');
 
-      const gridSize = 30;
-      const tileCount = canvas.width / gridSize;
-      let snake, food, dx, dy, score, isGameRunning, lastUpdateTime;
-      const frameInterval = 200;
+  const gridSize = 30;
+  const tileCount = canvas.width / gridSize;
+  let snake, foods, dx, dy, score, isGameRunning, lastUpdateTime;
+  let moveTimer = 0;
+  let moveInterval = 200; // ms ต่อ 1 ช่อง (เหมาะสมสำหรับ 60fps)
+  let animProgress = 1; // 0-1
+  let foodCount = 1;
+  let isPaused = false;
+      // --- UI: ปุ่มหยุด/เล่นต่อ ---
+      function setPause(paused) {
+        isPaused = paused;
+        const pauseIcon = document.getElementById('pauseIcon');
+        if (isPaused) {
+          pauseIcon.textContent = '▶️';
+        } else {
+          pauseIcon.textContent = '⏸️';
+        }
+      }
 
       // ฟังก์ชันสำหรับรีเซ็ตและเริ่มเกมใหม่
       function resetGame() {
@@ -180,9 +291,14 @@
         dy = 0;
         score = 0;
         scoreElement.textContent = score;
-        food = randomFood();
+        foods = [];
+        for (let i = 0; i < foodCount; i++) {
+          foods.push(randomFood());
+        }
         isGameRunning = true;
         lastUpdateTime = 0;
+        moveTimer = 0;
+        animProgress = 1;
       }
 
       // ฟังก์ชันสุ่มตำแหน่งผลไม้ใหม่และป้องกันการทับกับตัวงู
@@ -193,45 +309,147 @@
             x: Math.floor(Math.random() * tileCount),
             y: Math.floor(Math.random() * tileCount)
           };
-        } while (snake.some(part => part.x === newFood.x && part.y === newFood.y));
+        } while (
+          snake.some(part => part.x === newFood.x && part.y === newFood.y) ||
+          foods?.some(f => f.x === newFood.x && f.y === newFood.y)
+        );
         return newFood;
       }
 
-      // ฟังก์ชันวาดงู
+      // ฟังก์ชันวาดงู (ลำตัวไร้รอยต่อแบบทรงกระบอก)
       function drawSnake() {
-        ctx.fillStyle = '#7c5cff';
-        snake.forEach(part => {
-          ctx.fillRect(part.x * gridSize, part.y * gridSize, gridSize, gridSize);
-        });
+        const bodyWidth = gridSize * 0.92;
+        // วาดลำตัวเป็นเส้นโค้งต่อเนื่อง
+        if (snake.length > 1) {
+          ctx.save();
+          ctx.strokeStyle = '#7c5cff';
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          ctx.lineWidth = bodyWidth;
+          ctx.globalAlpha = 0.97;
+          ctx.beginPath();
+          for (let i = 0; i < snake.length; i++) {
+            const part = snake[i];
+            const cx = part.x * gridSize + gridSize / 2;
+            const cy = part.y * gridSize + gridSize / 2;
+            if (i === 0) {
+              ctx.moveTo(cx, cy);
+            } else {
+              ctx.lineTo(cx, cy);
+            }
+          }
+          ctx.stroke();
+          ctx.globalAlpha = 1;
+          ctx.restore();
+        }
+        // วาดหัวงูทับ (กลม+ตา+ยิ้ม)
+        if (snake.length > 0) {
+          const head = snake[0];
+          const cx = head.x * gridSize + gridSize / 2;
+          const cy = head.y * gridSize + gridSize / 2;
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(cx, cy, gridSize * 0.5, 0, Math.PI * 2);
+          ctx.fillStyle = '#a78bfa';
+          ctx.shadowColor = '#7c5cff';
+          ctx.shadowBlur = 8;
+          ctx.fill();
+          ctx.shadowBlur = 0;
+          // ตา
+          ctx.beginPath();
+          ctx.arc(cx - 5, cy - 3, 2, 0, Math.PI * 2);
+          ctx.arc(cx + 5, cy - 3, 2, 0, Math.PI * 2);
+          ctx.fillStyle = '#222';
+          ctx.fill();
+          // รอยยิ้ม
+          ctx.beginPath();
+          ctx.strokeStyle = '#222';
+          ctx.lineWidth = 2;
+          ctx.arc(cx, cy + 4, 6, 0.15 * Math.PI, 0.85 * Math.PI);
+          ctx.stroke();
+          ctx.restore();
+        }
       }
 
-      // ฟังก์ชันวาดผลไม้
+      // ฟังก์ชันวาดผลไม้ (กลมแดง+ใบไม้)
       function drawFood() {
-        ctx.fillStyle = '#f87171';
-        const size = gridSize;
-        ctx.beginPath();
-        ctx.arc(
-          food.x * gridSize + gridSize / 2,
-          food.y * gridSize + gridSize / 2,
-          size / 2,
-          0,
-          Math.PI * 2
-        );
-        ctx.fill();
+        const size = gridSize * 0.9;
+        for (const food of foods) {
+          const cx = food.x * gridSize + gridSize / 2;
+          const cy = food.y * gridSize + gridSize / 2;
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(cx, cy, size / 2, 0, Math.PI * 2);
+          const grad = ctx.createRadialGradient(cx, cy, size/6, cx, cy, size/2);
+          grad.addColorStop(0, '#fff1f2');
+          grad.addColorStop(0.5, '#fb7185');
+          grad.addColorStop(1, '#be123c');
+          ctx.fillStyle = grad;
+          ctx.shadowColor = '#fb7185';
+          ctx.shadowBlur = 8;
+          ctx.fill();
+          ctx.shadowBlur = 0;
+          ctx.beginPath();
+          ctx.ellipse(cx - 4, cy - size/2 + 6, 6, 2.5, -0.5, 0, Math.PI * 2);
+          ctx.fillStyle = '#22c55e';
+          ctx.fill();
+          ctx.restore();
+        }
       }
 
-      // ฟังก์ชันเคลื่อนที่งู
+      // ฟังก์ชันเคลื่อนที่งู (ทีละช่อง)
       function moveSnake() {
+        if (dx === 0 && dy === 0) return;
         const head = { x: snake[0].x + dx, y: snake[0].y + dy };
         snake.unshift(head);
-
-        if (head.x === food.x && head.y === food.y) {
-          score += 1;
-          scoreElement.textContent = score;
-          food = randomFood();
-        } else {
+        let ate = false;
+        for (let i = 0; i < foods.length; i++) {
+          if (head.x === foods[i].x && head.y === foods[i].y) {
+            score += 1;
+            scoreElement.textContent = score;
+            foods[i] = randomFood();
+            ate = true;
+            break;
+          }
+        }
+        if (!ate) {
           snake.pop();
         }
+      }
+      // --- UI: ปรับความเร็วและจำนวนผลไม้ ---
+      document.addEventListener('DOMContentLoaded', () => {
+        const speedInput = document.getElementById('speedInput');
+        const speedValue = document.getElementById('speedValue');
+        const foodInput = document.getElementById('foodInput');
+        speedInput.addEventListener('input', () => {
+          moveInterval = parseInt(speedInput.value);
+          speedValue.textContent = speedInput.value;
+        });
+        foodInput.addEventListener('input', () => {
+          let val = parseInt(foodInput.value);
+          if (isNaN(val) || val < 1) val = 1;
+          if (val > 10) val = 10;
+          foodCount = val;
+        });
+        // sync initial value
+        speedValue.textContent = speedInput.value;
+        foodCount = parseInt(foodInput.value);
+      });
+
+      // ฟังก์ชันสร้างตำแหน่งระหว่างช่อง (interpolate)
+      function getInterpolatedSnake(progress) {
+        // progress: 0 (old pos) -> 1 (new pos)
+        const interp = [];
+        for (let i = 0; i < snake.length - 1; i++) {
+          const a = snake[i];
+          const b = snake[i + 1];
+          interp.push({
+            x: a.x * progress + b.x * (1 - progress),
+            y: a.y * progress + b.y * (1 - progress)
+          });
+        }
+        interp.push(snake[snake.length - 1]);
+        return interp;
       }
 
       // ฟังก์ชันตรวจสอบการชน
@@ -250,27 +468,113 @@
       }
 
       // ฟังก์ชันวาดและอัปเดตเกม
-      function drawGame() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        moveSnake();
-        if (checkCollision()) {
-          endGame();
-          return;
+        // ฟังก์ชันวาดเส้นตาราง
+        function drawGrid() {
+          ctx.save();
+          ctx.strokeStyle = '#444';
+          ctx.lineWidth = 1;
+          for (let i = 1; i < tileCount; i++) {
+            // เส้นแนวตั้ง
+            ctx.beginPath();
+            ctx.moveTo(i * gridSize, 0);
+            ctx.lineTo(i * gridSize, canvas.height);
+            ctx.stroke();
+            // เส้นแนวนอน
+            ctx.beginPath();
+            ctx.moveTo(0, i * gridSize);
+            ctx.lineTo(canvas.width, i * gridSize);
+            ctx.stroke();
+          }
+          ctx.restore();
         }
-        drawFood();
-        drawSnake();
-      }
 
-      // ลูปหลักของเกม
+        // ฟังก์ชันวาดและอัปเดตเกม (อนิเมชันลื่นไหล)
+        function drawGame(progress) {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          drawGrid();
+          if (checkCollision()) {
+            endGame();
+            return;
+          }
+          drawFood();
+          // วาดงูด้วยตำแหน่ง interpolate
+          const interpSnake = getInterpolatedSnake(progress);
+          drawSnake(interpSnake);
+        }
+
+      // ลูปหลักของเกม (อนิเมชันลื่นไหล)
       function gameLoop(timestamp) {
         if (!isGameRunning) return;
-        const delta = timestamp - lastUpdateTime;
-        if (delta > frameInterval) {
-          drawGame();
-          lastUpdateTime = timestamp;
+        if (isPaused) {
+          requestAnimationFrame(gameLoop);
+          return;
         }
+        if (!lastUpdateTime) lastUpdateTime = timestamp;
+        let delta = timestamp - lastUpdateTime;
+        lastUpdateTime = timestamp;
+        moveTimer += delta;
+        let moved = false;
+        while (moveTimer >= moveInterval) {
+          moveSnake();
+          moveTimer -= moveInterval;
+          moved = true;
+        }
+        animProgress = moveTimer / moveInterval;
+        if (moved) animProgress = 0;
+        drawGame(animProgress);
         requestAnimationFrame(gameLoop);
       }
+      // --- UI: ปรับความเร็วและจำนวนผลไม้ + ปุ่มหยุด ---
+      document.addEventListener('DOMContentLoaded', () => {
+        const speedInput = document.getElementById('speedInput');
+        const speedValue = document.getElementById('speedValue');
+        const foodInput = document.getElementById('foodInput');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const speedDown = document.getElementById('speedDown');
+        const speedUp = document.getElementById('speedUp');
+        const foodDown = document.getElementById('foodDown');
+        const foodUp = document.getElementById('foodUp');
+
+        // ปรับ speed
+        function updateSpeed(val) {
+          let v = parseInt(val);
+          if (isNaN(v) || v < 50) v = 50;
+          if (v > 500) v = 500;
+          moveInterval = v;
+          speedInput.value = v;
+          speedValue.textContent = v + ' ms';
+        }
+        speedInput.addEventListener('input', e => updateSpeed(e.target.value));
+        speedDown.addEventListener('click', () => updateSpeed(parseInt(speedInput.value) - 10));
+        speedUp.addEventListener('click', () => updateSpeed(parseInt(speedInput.value) + 10));
+
+        // ปรับจำนวนผลไม้
+        function updateFood(val) {
+          let v = parseInt(val);
+          if (isNaN(v) || v < 1) v = 1;
+          if (v > 10) v = 10;
+          foodCount = v;
+          foodInput.value = v;
+        }
+        foodInput.addEventListener('input', e => updateFood(e.target.value));
+        foodDown.addEventListener('click', () => updateFood(parseInt(foodInput.value) - 1));
+        foodUp.addEventListener('click', () => updateFood(parseInt(foodInput.value) + 1));
+
+        // sync initial value
+        updateSpeed(speedInput.value);
+        updateFood(foodInput.value);
+
+        // ปุ่มหยุด/เล่นต่อ (resume กลับมาเล่นต่อปกติ ไม่จบเกม)
+        pauseBtn.addEventListener('click', () => {
+          if (!isPaused) {
+            setPause(true);
+          } else {
+            setPause(false);
+            // ปรับ lastUpdateTime ให้เท่ากับเวลาปัจจุบัน เพื่อไม่ให้ขยับทันทีหลัง resume
+            lastUpdateTime = performance.now();
+          }
+        });
+      });
 
       // ฟังก์ชันเริ่มเกม
       function startGame() {
@@ -301,6 +605,19 @@
       document.getElementById('right').addEventListener('touchstart', (e) => { e.preventDefault(); if (dx !== -1) { dx = 1; dy = 0; } });
 
       startGame();
+        // ป้องกันการ scroll หน้าจอด้วยคีย์บอร์ด (arrow, space, page)
+        window.addEventListener('keydown', function(e) {
+          // ป้องกัน scroll ด้วยปุ่มลูกศร, space, pageup/down, home/end
+          const keys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' ', 'Spacebar', 'PageUp', 'PageDown', 'Home', 'End'];
+          if (keys.includes(e.key)) {
+            e.preventDefault();
+          }
+        }, { passive: false });
+
+        // ป้องกันการ scroll ด้วยการสัมผัสหน้าจอ (touchmove)
+        window.addEventListener('touchmove', function(e) {
+          e.preventDefault();
+        }, { passive: false });
     </script>
   </body>
 </html>
