@@ -13,7 +13,7 @@
         padding: 0;
         box-sizing: border-box;
         font-family: 'Itim', cursive;
-        -webkit-tap-highlight-color: transparent; /* ป้องกันแสงวาบเมื่อแตะปุ่มบนมือถือ */
+        -webkit-tap-highlight-color: transparent;
       }
 
       body {
@@ -21,14 +21,14 @@
         justify-content: center;
         align-items: center;
         min-height: 100vh;
-        background: linear-gradient(to right top, #051937, #004d7a, #008793, #00bf72, #a8eb12);
+        background: linear-gradient(135deg, #051937, #004d7a, #008793, #00bf72, #a8eb12);
         color: white;
       }
 
       .game-container {
         text-align: center;
         background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
+        backdrop-filter: blur(12px);
         border-radius: 20px;
         padding: 20px;
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
@@ -42,14 +42,14 @@
       canvas {
         border: 3px solid white;
         border-radius: 10px;
-        background: #2a2a2a;
+        background: #1c1c1c;
         width: 100%;
         max-width: 400px;
         height: auto;
       }
 
       .controls {
-        margin-top: 16px;
+        margin-top: 12px;
       }
 
       button {
@@ -68,20 +68,31 @@
         background: #5a6fd8;
       }
 
+      /* 🎮 ปุ่มบังคับ D-Pad */
       .dpad {
         display: grid;
-        grid-template-columns: 60px 60px 60px;
-        grid-template-rows: 60px 60px 60px;
+        grid-template-columns: repeat(3, 70px);
+        grid-template-rows: repeat(3, 70px);
         justify-content: center;
-        gap: 6px;
-        margin-top: 16px;
+        align-items: center;
+        gap: 8px;
+        margin: 20px auto 0;
       }
 
       .dpad button {
-        width: 60px;
-        height: 60px;
-        font-size: 24px;
-        border-radius: 12px;
+        width: 70px;
+        height: 70px;
+        font-size: 26px;
+        border-radius: 16px;
+        border: 2px solid #fff;
+        background: rgba(255, 255, 255, 0.15);
+        color: white;
+        transition: all 0.2s;
+      }
+
+      .dpad button:active {
+        background: rgba(255, 255, 255, 0.35);
+        transform: scale(0.95);
       }
 
       .dpad .empty {
@@ -101,10 +112,16 @@
       }
 
       @media (max-width: 480px) {
+        .dpad {
+          grid-template-columns: repeat(3, 55px);
+          grid-template-rows: repeat(3, 55px);
+          gap: 6px;
+        }
+
         .dpad button {
-          width: 50px;
-          height: 50px;
-          font-size: 20px;
+          width: 55px;
+          height: 55px;
+          font-size: 22px;
         }
       }
     </style>
@@ -144,13 +161,15 @@
       const gameOverElement = document.getElementById('gameOver');
       const finalScore = document.getElementById('finalScore');
 
-      const gridSize = 20;
+      // 📏 ปรับให้ใหญ่ขึ้น
+      const gridSize = 25; // เดิม 20 → งูและผลไม้ใหญ่ขึ้น
       const tileCount = canvas.width / gridSize;
+
       let snake, food, dx, dy, score, isGameRunning, lastUpdateTime;
-      const frameInterval = 100;
+      const frameInterval = 160; // ⏳ ลดความเร็วลง (เดิม 100)
 
       function resetGame() {
-        snake = [{ x: 10, y: 10 }];
+        snake = [{ x: 8, y: 8 }];
         dx = 0;
         dy = 0;
         score = 0;
@@ -176,7 +195,7 @@
         ctx.arc(
           food.x * gridSize + gridSize / 2,
           food.y * gridSize + gridSize / 2,
-          gridSize / 2,
+          gridSize * 0.6, // 🔸 ผลไม้ใหญ่ขึ้นนิดนึง
           0,
           Math.PI * 2
         );
@@ -254,20 +273,19 @@
         if (e.key === 'ArrowRight' && dx !== -1) { dx = 1; dy = 0; }
       });
 
-      // 📱 Touch buttons control - *** UPDATED FOR BETTER RESPONSIVENESS ***
-      // ใช้ 'touchstart' แทน 'click' เพื่อการตอบสนองที่เร็วขึ้น
+      // 📱 Touch buttons control
       function handleTouch(event, newDx, newDy, oppositeDx, oppositeDy) {
-        event.preventDefault(); // ป้องกันการซูมหรือ scroll โดยไม่ได้ตั้งใจ
+        event.preventDefault();
         if (dx !== oppositeDx && dy !== oppositeDy) {
           dx = newDx;
           dy = newDy;
         }
       }
 
-      document.getElementById('up').addEventListener('touchstart', (e) => handleTouch(e, 0, -1, 0, 1));
-      document.getElementById('down').addEventListener('touchstart', (e) => handleTouch(e, 0, 1, 0, -1));
-      document.getElementById('left').addEventListener('touchstart', (e) => handleTouch(e, -1, 0, 1, 0));
-      document.getElementById('right').addEventListener('touchstart', (e) => handleTouch(e, 1, 0, -1, 0));
+      document.getElementById('up').addEventListener('touchstart', e => handleTouch(e, 0, -1, 0, 1));
+      document.getElementById('down').addEventListener('touchstart', e => handleTouch(e, 0, 1, 0, -1));
+      document.getElementById('left').addEventListener('touchstart', e => handleTouch(e, -1, 0, 1, 0));
+      document.getElementById('right').addEventListener('touchstart', e => handleTouch(e, 1, 0, -1, 0));
 
       startGame();
     </script>
