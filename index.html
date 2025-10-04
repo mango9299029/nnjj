@@ -34,15 +34,21 @@
         min-height: 100vh;
         background: var(--bg-dark);
         color: var(--text-light);
+        overscroll-behavior: contain;
+        touch-action: none;
+        /* ป้องกัน scroll บนมือถือ */
       }
 
       .game-container {
         text-align: center;
         background: var(--panel-dark);
         border-radius: 20px;
-        padding: 25px 30px;
+        padding: 18px 6vw 18px 6vw;
         box-shadow: 0 10px 30px var(--shadow);
         position: relative;
+        max-width: 98vw;
+        width: 100%;
+        box-sizing: border-box;
       }
 
       .score {
@@ -62,16 +68,18 @@
       }
 
       .controls {
-        margin-top: 24px;
+        margin-top: 18px;
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
         align-items: center;
-        gap: 12px;
+        gap: 8px;
         background: #23243a;
         border-radius: 14px;
-        padding: 16px 10px 10px 10px;
+        padding: 10px 4px 8px 4px;
         box-shadow: 0 2px 8px var(--shadow);
+        width: 100%;
+        box-sizing: border-box;
       }
 
       .controls label {
@@ -80,11 +88,12 @@
         margin-bottom: 0;
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 4px;
         background: #23243a;
         border-radius: 8px;
-        padding: 4px 8px;
+        padding: 2px 4px;
         box-shadow: 0 1px 4px #0002;
+        min-width: 0;
       }
 
       .controls .input-group {
@@ -93,25 +102,28 @@
         gap: 2px;
         background: #181828;
         border-radius: 6px;
-        padding: 2px 4px;
+        padding: 1px 2px;
+        min-width: 0;
       }
 
       .controls input[type="range"] {
         accent-color: var(--accent);
-        width: 90px;
-        margin: 0 6px;
+        width: 70px;
+        margin: 0 4px;
+        min-width: 0;
       }
 
       .controls input[type="number"] {
-        width: 54px;
+        width: 40px;
         border-radius: 6px;
         border: 1px solid #444;
         background: #181828;
         color: var(--text-light);
-        padding: 2px 4px;
+        padding: 2px 2px;
         font-size: 1rem;
         text-align: center;
-        margin: 0 2px;
+        margin: 0 1px;
+        min-width: 0;
       }
 
       .controls .step-btn {
@@ -119,24 +131,25 @@
         color: var(--accent);
         border: none;
         border-radius: 4px;
-        width: 28px;
-        height: 28px;
-        font-size: 1.2rem;
+        width: 24px;
+        height: 24px;
+        font-size: 1.1rem;
         cursor: pointer;
         transition: background 0.2s;
         display: flex;
         align-items: center;
         justify-content: center;
+        min-width: 0;
       }
       .controls .step-btn:hover {
         background: var(--btn-hover);
       }
 
       .controls button {
-        margin: 0 4px;
-        min-width: 44px;
-        min-height: 44px;
-        font-size: 1.1rem;
+        margin: 0 2px;
+        min-width: 38px;
+        min-height: 38px;
+        font-size: 1rem;
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -170,19 +183,23 @@
 
       .dpad {
         display: grid;
-        grid-template-columns: 60px 60px 60px;
-        grid-template-rows: 60px 60px 60px;
+        grid-template-columns: 54px 54px 54px;
+        grid-template-rows: 54px 54px 54px;
         justify-content: center;
-        gap: 6px;
-        margin-top: 16px;
+        gap: 4px;
+        margin-top: 12px;
+        width: 100%;
+        max-width: 170px;
+        margin-left: auto;
+        margin-right: auto;
       }
 
       .dpad button {
-        width: 60px;
-        height: 60px;
-        font-size: 24px;
-        border-radius: 12px;
-        padding: 0; /* ลบ padding ที่เกินมาออก */
+        width: 54px;
+        height: 54px;
+        font-size: 22px;
+        border-radius: 10px;
+        padding: 0;
       }
 
       .dpad .empty {
@@ -201,11 +218,45 @@
         text-align: center;
       }
 
-      @media (max-width: 480px) {
+      @media (max-width: 600px) {
+        .game-container {
+          padding: 8px 2vw 8px 2vw;
+        }
+        .controls {
+          gap: 4px;
+          padding: 6px 2px 6px 2px;
+        }
+        .controls label {
+          font-size: 0.98rem;
+          padding: 1px 2px;
+        }
+        .controls input[type="range"] {
+          width: 54px;
+        }
+        .controls input[type="number"] {
+          width: 32px;
+          font-size: 0.98rem;
+        }
+        .controls .step-btn {
+          width: 18px;
+          height: 18px;
+          font-size: 0.95rem;
+        }
+        .controls button {
+          min-width: 28px;
+          min-height: 28px;
+          font-size: 0.95rem;
+        }
+        .dpad {
+          grid-template-columns: 38px 38px 38px;
+          grid-template-rows: 38px 38px 38px;
+          max-width: 120px;
+        }
         .dpad button {
-          width: 50px;
-          height: 50px;
-          font-size: 20px;
+          width: 38px;
+          height: 38px;
+          font-size: 16px;
+          border-radius: 7px;
         }
       }
     </style>
