@@ -199,7 +199,7 @@
 
       // ฟังก์ชันวาดงู
       function drawSnake() {
-        ctx.fillStyle = '#7c5cff'; /* ใช้สีเน้นสำหรับงู */
+        ctx.fillStyle = '#7c5cff';
         snake.forEach(part => {
           ctx.fillRect(part.x * gridSize, part.y * gridSize, gridSize, gridSize);
         });
@@ -226,7 +226,7 @@
         snake.unshift(head);
 
         if (head.x === food.x && head.y === food.y) {
-          score += 1.000000000000001;
+          score += 1;
           scoreElement.textContent = score;
           food = randomFood();
         } else {
