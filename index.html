@@ -3,11 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-    <title>เกมงู test2</title>
+    <title>เกมงู ธีมมืด</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet" />
 
     <style>
+      /* เพิ่มตัวแปรสีจากโค้ดเครื่องคิดเลข */
       :root {
         --bg-dark: #121217;
         --panel-dark: #1e1f29;
@@ -23,7 +24,7 @@
         margin: 0;
         padding: 0;
         box-sizing: border-box;
-        font-family: 'Poppins', sans-serif;
+        font-family: 'Poppins', sans-serif; /* เปลี่ยนฟอนต์ให้เข้ากับธีม */
         -webkit-tap-highlight-color: transparent;
       }
 
@@ -32,143 +33,54 @@
         justify-content: center;
         align-items: center;
         min-height: 100vh;
-        background: var(--bg-dark);
-        color: var(--text-light);
-        overscroll-behavior: contain;
-        touch-action: none;
-        /* ป้องกัน scroll บนมือถือ */
+        background: var(--bg-dark); /* ใช้สีพื้นหลังของธีมมืด */
+        color: var(--text-light); /* ใช้สีข้อความสว่าง */
       }
 
       .game-container {
         text-align: center;
-        background: var(--panel-dark);
+        background: var(--panel-dark); /* ใช้สีแผงควบคุม */
         border-radius: 20px;
-        padding: 10px 2vw 10px 2vw;
-        box-shadow: 0 10px 30px var(--shadow);
+        padding: 25px 30px; /* ปรับขนาด padding ให้เข้ากับเครื่องคิดเลข */
+        box-shadow: 0 10px 30px var(--shadow); /* ใช้เงาของเครื่องคิดเลข */
         position: relative;
-        max-width: 100vw;
-        width: 100%;
-        box-sizing: border-box;
       }
 
       .score {
         font-size: 22px;
         margin-bottom: 8px;
-        color: var(--accent);
-        font-weight: 700;
+        color: var(--accent); /* ใช้สีเน้นสำหรับคะแนน */
+        font-weight: 700; /* เพิ่มความหนาของตัวอักษร */
       }
 
       canvas {
-        border: 3px solid var(--accent);
+        border: 3px solid var(--accent); /* ใช้สีเน้นสำหรับเส้นขอบ */
         border-radius: 10px;
-        background: #2a2c3d;
+        background: #2a2c3d; /* ใช้สีปุ่มเป็นพื้นหลังของ canvas */
         width: 100%;
         max-width: 400px;
         height: auto;
       }
 
       .controls {
-        margin-top: 18px;
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        align-items: center;
-        gap: 8px;
-        background: #23243a;
-        border-radius: 14px;
-        padding: 10px 4px 8px 4px;
-        box-shadow: 0 2px 8px var(--shadow);
-        width: 100%;
-        box-sizing: border-box;
-      }
-
-      .controls label {
-        color: var(--text-light);
-        font-size: 1.05rem;
-        margin-bottom: 0;
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        background: #23243a;
-        border-radius: 8px;
-        padding: 2px 4px;
-        box-shadow: 0 1px 4px #0002;
-        min-width: 0;
-      }
-
-      .controls .input-group {
-        display: flex;
-        align-items: center;
-        gap: 2px;
-        background: #181828;
-        border-radius: 6px;
-        padding: 1px 2px;
-        min-width: 0;
-      }
-
-      .controls input[type="range"] {
-        accent-color: var(--accent);
-        width: 70px;
-        margin: 0 4px;
-        min-width: 0;
-      }
-      .controls input[type="number"] {
-        width: 40px;
-        border-radius: 6px;
-        border: 1px solid #444;
-        background: #181828;
-        color: var(--text-light);
-        padding: 2px 2px;
-        font-size: 1rem;
-        text-align: center;
-        margin: 0 1px;
-        min-width: 0;
-      }
-
-      .controls .step-btn {
-        background: var(--btn-bg);
-        color: var(--accent);
-        border: none;
-        border-radius: 4px;
-        width: 24px;
-        height: 24px;
-        font-size: 1.1rem;
-        cursor: pointer;
-        transition: background 0.2s;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        min-width: 0;
-      }
-      .controls .step-btn:hover {
-        background: var(--btn-hover);
-      }
-
-      .controls button {
-        margin: 0 2px;
-        min-width: 38px;
-        min-height: 38px;
-        font-size: 1rem;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
+        margin-top: 24px; /* ปรับระยะห่าง */
       }
 
       button {
-        background: var(--btn-bg);
-        color: var(--text-light);
+        background: var(--btn-bg); /* ใช้สีปุ่ม */
+        color: var(--text-light); /* ใช้สีข้อความสว่าง */
         border: none;
-        padding: 18px 24px;
-        border-radius: 14px;
-        font-size: 1.4rem;
-        font-weight: 600;
+        padding: 18px 24px; /* ปรับขนาด padding ให้เข้ากับเครื่องคิดเลข */
+        border-radius: 14px; /* ใช้ความโค้งของปุ่ม */
+        font-size: 1.4rem; /* ปรับขนาดฟอนต์ให้ใหญ่ขึ้น */
+        font-weight: 600; /* เพิ่มความหนา */
         cursor: pointer;
         margin: 8px;
         transition:
           background 0.3s ease,
           box-shadow 0.3s ease,
           transform 0.15s ease;
-        box-shadow: 0 4px 8px var(--shadow);
+        box-shadow: 0 4px 8px var(--shadow); /* ใช้เงาของปุ่ม */
       }
 
       button:hover {
@@ -181,227 +93,44 @@
       }
 
       .dpad {
-        position: fixed;
-        left: 50%;
-        transform: translateX(-50%);
-        bottom: 0;
-        z-index: 1001;
         display: grid;
-        grid-template-columns: repeat(3, clamp(40px, 18vw, 64px));
-        grid-template-rows: repeat(3, clamp(40px, 18vw, 64px));
+        grid-template-columns: 60px 60px 60px;
+        grid-template-rows: 60px 60px 60px;
         justify-content: center;
-        gap: clamp(4px, 2vw, 12px);
-        background: #23243aee;
-        border-radius: 22px 22px 0 0;
-        padding: clamp(8px, 2vw, 18px) clamp(4px, 2vw, 12px) clamp(8px, 2vw, 14px) clamp(4px, 2vw, 12px);
-        margin: 0;
-        max-width: 98vw;
-        width: auto;
-      }
-      }
-      @media (max-width: 600px) {
-        .dpad {
-          position: fixed;
-          left: 50%;
-          transform: translateX(-50%);
-          bottom: 0;
-          z-index: 1001;
-          background: #23243aee;
-          padding: 8px 0 12px 0;
-          margin: 0;
-          box-shadow: 0 -2px 16px #0008;
-          border-radius: 0 0 18px 18px;
-          display: grid;
-          grid-template-columns: 64px 64px 64px;
-          grid-template-rows: 64px 64px 64px;
-          max-width: 210px;
-          width: 100vw;
-          justify-content: center;
-        }
-        .dpad button {
-          width: 64px;
-          height: 64px;
-          font-size: 2.2rem;
-          border-radius: 18px;
-        }
-        .game-container {
-          padding-bottom: 120px !important;
-        }
+        gap: 6px;
+        margin-top: 16px;
       }
 
       .dpad button {
-        width: clamp(40px, 18vw, 64px);
-        height: clamp(40px, 18vw, 64px);
-        font-size: clamp(18px, 6vw, 28px);
-        border-radius: clamp(10px, 4vw, 18px);
-        padding: 0;
-        border: none;
-        box-shadow: none;
-        background: var(--btn-bg);
-        color: var(--text-light);
-        transition: background 0.18s, color 0.18s, transform 0.12s;
-      }
-      .dpad button:active {
-        background: var(--btn-hover);
-        color: #fff;
-        transform: scale(0.96);
-      }
-      /* No need for extra dpad button rules, clamp() handles all sizes */
+        width: 60px;
+        height: 60px;
+        font-size: 24px;
+        border-radius: 12px;
+        padding: 0; /* ลบ padding ที่เกินมาออก */
       }
 
       .dpad .empty {
         visibility: hidden;
       }
 
-        body:not(.pc-mode) .dpad {
-          position: fixed;
-          left: 50%;
-          transform: translateX(-50%);
-          bottom: 0;
-          z-index: 1001;
-          background: rgba(44, 44, 60, 0.97);
-          border-radius: 22px 22px 0 0;
-          border: 2.5px solid var(--accent);
-          box-shadow: 0 -2px 24px #7c5cff33;
-          padding: 14px 8px 10px 8px;
-          margin: 0;
-          display: grid;
-          grid-template-columns: 60px 60px 60px;
-          grid-template-rows: 60px 60px 60px;
-          max-width: 220px;
-          width: 100vw;
-          justify-content: center;
-        }
-        /* Remove any other .dpad rules in this media query to avoid conflicts */
-        body:not(.pc-mode) .dpad button {
-          width: 60px;
-          height: 60px;
-          font-size: 24px;
-          border-radius: 16px;
-          border: 2.5px solid var(--accent);
-          background: linear-gradient(145deg, #23243a 60%, #7c5cff22 100%);
-          box-shadow: 0 2px 10px #7c5cff22, 0 1.5px 0 #fff2 inset;
-          color: var(--text-light);
-          transition: background 0.18s, box-shadow 0.18s, border 0.18s, transform 0.12s;
-          font-weight: 600;
-          letter-spacing: 0.5px;
-          outline: none;
-          overflow: hidden;
-          user-select: none;
-          cursor: pointer;
-        }
-        body:not(.pc-mode) .dpad button:hover, body:not(.pc-mode) .dpad button:focus {
-          background: linear-gradient(145deg, #2a2c3d 60%, #a78bfa55 100%);
-          box-shadow: 0 4px 18px #7c5cff44, 0 2px 0 #fff2 inset;
-          border-color: #a78bfa;
-          color: #fff;
-          z-index: 2;
-        }
-        body:not(.pc-mode) .dpad button:active {
-          background: linear-gradient(145deg, #181828 60%, #7c5cff44 100%);
-          box-shadow: 0 1px 4px #7c5cff44, 0 1.5px 0 #fff2 inset;
-          border-color: #7c5cff;
-          color: #fff;
-          transform: scale(0.96);
-        }
-        body:not(.pc-mode) .game-container {
-          padding-bottom: 120px !important;
-        }
+      .game-over {
+        display: none;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 0, 0, 0.85);
+        padding: 30px;
+        border-radius: 15px;
+        text-align: center;
+      }
+
       @media (max-width: 480px) {
-        body:not(.pc-mode) .dpad {
-          grid-template-columns: 50px 50px 50px;
-          grid-template-rows: 50px 50px 50px;
-          max-width: 170px;
-        }
-        body:not(.pc-mode) .dpad button {
+        .dpad button {
           width: 50px;
           height: 50px;
           font-size: 20px;
-          border-radius: 12px;
         }
-      }
-          padding-right: 4vw;
-        }
-        .controls {
-          gap: 4px;
-          padding: 6px 2px 6px 2px;
-        }
-        .controls label {
-          font-size: 0.98rem;
-          padding: 1px 2px;
-        }
-        .controls input[type="range"] {
-          width: 54px;
-        }
-        .controls input[type="number"] {
-          width: 32px;
-          font-size: 0.98rem;
-        }
-        .controls .step-btn {
-          width: 18px;
-          height: 18px;
-          font-size: 0.95rem;
-        }
-        .controls button {
-          min-width: 28px;
-          min-height: 28px;
-          font-size: 0.95rem;
-        }
-        .dpad {
-          grid-template-columns: 64px 64px 64px;
-          grid-template-rows: 64px 64px 64px;
-          max-width: 210px;
-        }
-        .dpad button {
-          width: 128px;
-          height: 128px;
-          font-size: 64px;
-          border-radius: 32px;
-        }
-      }
-      body.pc-mode {
-        touch-action: auto;
-        overscroll-behavior: auto;
-      }
-      body.pc-mode .game-container {
-        max-width: 480px;
-        padding: 25px 30px;
-      }
-      body.pc-mode .controls {
-        gap: 12px;
-        padding: 16px 10px 10px 10px;
-      }
-      body.pc-mode .controls label {
-        font-size: 1.05rem;
-        padding: 4px 8px;
-      }
-      body.pc-mode .controls input[type="range"] {
-        width: 90px;
-      }
-      body.pc-mode .controls input[type="number"] {
-        width: 54px;
-        font-size: 1rem;
-      }
-      body.pc-mode .controls .step-btn {
-        width: 28px;
-        height: 28px;
-        font-size: 1.2rem;
-      }
-      body.pc-mode .controls button {
-        min-width: 44px;
-        min-height: 44px;
-        font-size: 1.1rem;
-      }
-      body.pc-mode .dpad {
-        grid-template-columns: 60px 60px 60px;
-        grid-template-rows: 60px 60px 60px;
-        max-width: 170px;
-      }
-      body.pc-mode .dpad button {
-        width: 60px;
-        height: 60px;
-        font-size: 24px;
-        border-radius: 12px;
       }
     </style>
   </head>
@@ -410,74 +139,12 @@
       <div class="score">คะแนน: <span id="score">0</span></div>
       <canvas id="gameCanvas" width="390" height="390"></canvas>
 
-      <button id="settingsBtn" title="ตั้งค่า" style="position:absolute;top:10px;right:10px;z-index:10;background:#222;color:#fff;border-radius:50%;width:44px;height:44px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;box-shadow:0 2px 8px var(--shadow);border:none;cursor:pointer;">
-        <span id="settingsIcon">⚙️</span>
-      </button>
-      <div class="controls" id="controlsBar" style="transition:opacity 0.2s;">
-        <button id="modeBtn" title="เปลี่ยนโหมด" style="background:#222;color:#fff;min-width:54px;">
-          <span id="modeIcon">📱</span> <span id="modeText">Mobile</span>
-        </button>
-        <button id="pauseBtn" title="หยุด/เล่นต่อ" style="background:var(--accent);color:#fff;">
-          <span id="pauseIcon">⏸️</span>
-        </button>
-        <button onclick="startGame()" title="เริ่มใหม่">🔄</button>
+      <div class="controls">
+        <button id="pauseBtn" style="background:#a78bfa;color:#222;min-width:44px;">⏸️</button>
+        <button onclick="startGame()">เริ่มใหม่</button>
       </div>
-      <!-- Popup Settings Modal -->
-      <div id="settingsModal" style="display:none;position:fixed;z-index:1000;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.25);backdrop-filter:blur(2.5px);display:flex;justify-content:center;align-items:center;">
-        <div class="settings-popup" style="background:#23243a;padding:24px 4vw 20px 4vw;border-radius:18px;box-shadow:0 8px 32px #000a;min-width:0;max-width:99vw;width:100%;max-width:480px;position:relative;display:flex;flex-direction:column;align-items:center;">
-          <button id="closeSettings" style="position:absolute;top:12px;right:12px;background:none;border:none;color:#fff;font-size:1.5rem;cursor:pointer;">✖️</button>
-          <h3 style="color:var(--accent);margin-bottom:20px;font-size:1.22rem;font-weight:600;letter-spacing:0.5px;text-align:center;width:100%;">ตั้งค่าเกม</h3>
-          <div class="settings-list" style="display:flex;flex-direction:column;gap:18px;width:100%;max-width:400px;margin:0 auto;">
-            <div class="settings-row" style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:12px;background:#181828;border-radius:14px;padding:14px 12px;box-sizing:border-box;flex-wrap:wrap;">
-              <span style="color:var(--text-light);font-size:1.12rem;min-width:80px;text-align:left;">ความเร็ว</span>
-              <div class="input-group" style="gap:8px;display:flex;align-items:center;flex:1 1 120px;max-width:160px;width:100%;background:#23243a;border-radius:8px;padding:4px 10px;box-sizing:border-box;">
-                <button class="step-btn" id="speedDown" tabindex="-1">-</button>
-                <input id="speedInput" type="number" min="50" max="500" value="200" step="10" style="width:60px;font-size:1.12rem;text-align:center;box-sizing:border-box;background:#23243a;border:none;color:#fff;">
-                <button class="step-btn" id="speedUp" tabindex="-1">+</button>
-              </div>
-              <span id="speedValue" style="min-width:20px;text-align:right;"></span>
-            </div>
-            <div class="settings-row" style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:12px;background:#181828;border-radius:14px;padding:14px 12px;box-sizing:border-box;flex-wrap:wrap;">
-              <span style="color:var(--text-light);font-size:1.12rem;min-width:80px;text-align:left;">จำนวนผลไม้</span>
-              <div class="input-group" style="gap:8px;display:flex;align-items:center;flex:1 1 120px;max-width:160px;width:100%;background:#23243a;border-radius:8px;padding:4px 10px;box-sizing:border-box;">
-                <button class="step-btn" id="foodDown" tabindex="-1">-</button>
-                <input id="foodInput" type="number" min="1" max="10" value="1" style="width:60px;font-size:1.12rem;text-align:center;box-sizing:border-box;background:#23243a;border:none;color:#fff;">
-                <button class="step-btn" id="foodUp" tabindex="-1">+</button>
-              </div>
-              <span style="min-width:20px;"></span>
-            </div>
-          </div>
-        </div>
-      </div>
-      <style>
-      @media (max-width: 600px) {
-        #settingsModal .settings-popup {
-          max-width: 100vw;
-          width: 100vw;
-          border-radius: 0 0 16px 16px;
-          padding-left: 0;
-          padding-right: 0;
-        }
-        #settingsModal .settings-list {
-          max-width: 100vw;
-          width: 100%;
-        }
-        #settingsModal .settings-row {
-          flex-direction: column;
-          align-items: stretch;
-          gap: 8px;
-          padding: 10px 3vw;
-        }
-        #settingsModal .input-group {
-          max-width: 100%;
-          width: 100%;
-          justify-content: flex-start;
-          padding: 4px 4px;
-        }
-      }
-      </style>
 
-  <div class="dpad">
+      <div class="dpad">
         <div class="empty"></div>
         <button id="up">⬆️</button>
         <div class="empty"></div>
@@ -489,12 +156,32 @@
         <div class="empty"></div>
       </div>
 
-  <div class="game-over" id="gameOver">
-        <h2>กาก💩</h2>
+      <div class="game-over" id="gameOver">
+        <h2>จบเกม!</h2>
         <p>คะแนนของคุณ: <span id="finalScore">0</span></p>
         <button onclick="startGame()">เล่นอีกครั้ง</button>
       </div>
-  </div>
+
+      <button id="settingsBtn" title="ตั้งค่า" style="position:absolute;top:10px;right:10px;z-index:10;background:#222;color:#fff;border-radius:50%;width:44px;height:44px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;box-shadow:0 2px 8px #7c5cff44;border:none;cursor:pointer;">
+        <span>⚙️</span>
+      </button>
+      <div id="settingsModal" style="display:none;position:fixed;z-index:1000;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.25);backdrop-filter:blur(2.5px);display:flex;justify-content:center;align-items:center;">
+        <div style="background:#23243a;padding:24px 4vw 20px 4vw;border-radius:18px;box-shadow:0 8px 32px #000a;min-width:0;max-width:99vw;width:100%;max-width:400px;position:relative;display:flex;flex-direction:column;align-items:center;">
+          <button id="closeSettings" style="position:absolute;top:12px;right:12px;background:none;border:none;color:#fff;font-size:1.5rem;cursor:pointer;">✖️</button>
+          <h3 style="color:#a78bfa;margin-bottom:20px;font-size:1.22rem;font-weight:600;letter-spacing:0.5px;text-align:center;width:100%;">ตั้งค่าเกม</h3>
+          <div style="display:flex;flex-direction:column;gap:18px;width:100%;max-width:340px;margin:0 auto;">
+            <div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:12px;background:#181828;border-radius:14px;padding:14px 12px;box-sizing:border-box;flex-wrap:wrap;">
+              <span style="color:#fff;font-size:1.12rem;min-width:80px;text-align:left;">ความเร็ว</span>
+              <input id="speedInput" type="number" min="50" max="500" value="200" step="10" style="width:60px;font-size:1.12rem;text-align:center;box-sizing:border-box;background:#23243a;border:none;color:#fff;border-radius:8px;padding:4px 8px;">
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:12px;background:#181828;border-radius:14px;padding:14px 12px;box-sizing:border-box;flex-wrap:wrap;">
+              <span style="color:#fff;font-size:1.12rem;min-width:80px;text-align:left;">จำนวนผลไม้</span>
+              <input id="foodInput" type="number" min="1" max="10" value="1" style="width:60px;font-size:1.12rem;text-align:center;box-sizing:border-box;background:#23243a;border:none;color:#fff;border-radius:8px;padding:4px 8px;">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <script>
       const canvas = document.getElementById('gameCanvas');
@@ -503,24 +190,10 @@
       const gameOverElement = document.getElementById('gameOver');
       const finalScore = document.getElementById('finalScore');
 
-  const gridSize = 30;
-  const tileCount = canvas.width / gridSize;
-  let snake, foods, dx, dy, score, isGameRunning, lastUpdateTime;
-  let moveTimer = 0;
-  let moveInterval = 200; // ms ต่อ 1 ช่อง (เหมาะสมสำหรับ 60fps)
-  let animProgress = 1; // 0-1
-  let foodCount = 1;
-  let isPaused = false;
-      // --- UI: ปุ่มหยุด/เล่นต่อ ---
-      function setPause(paused) {
-        isPaused = paused;
-        const pauseIcon = document.getElementById('pauseIcon');
-        if (isPaused) {
-          pauseIcon.textContent = '▶️';
-        } else {
-          pauseIcon.textContent = '⏸️';
-        }
-      }
+      const gridSize = 30;
+      const tileCount = canvas.width / gridSize;
+      let snake, food, dx, dy, score, isGameRunning, lastUpdateTime;
+      const frameInterval = 200;
 
       // ฟังก์ชันสำหรับรีเซ็ตและเริ่มเกมใหม่
       function resetGame() {
@@ -529,14 +202,15 @@
         dy = 0;
         score = 0;
         scoreElement.textContent = score;
+        // รองรับหลายผลไม้
+        food = null;
         foods = [];
-        for (let i = 0; i < foodCount; i++) {
+        let count = window.foodCountSetting || 1;
+        for (let i = 0; i < count; i++) {
           foods.push(randomFood());
         }
         isGameRunning = true;
         lastUpdateTime = 0;
-        moveTimer = 0;
-        animProgress = 1;
       }
 
       // ฟังก์ชันสุ่มตำแหน่งผลไม้ใหม่และป้องกันการทับกับตัวงู
@@ -547,23 +221,36 @@
             x: Math.floor(Math.random() * tileCount),
             y: Math.floor(Math.random() * tileCount)
           };
-        } while (
-          snake.some(part => part.x === newFood.x && part.y === newFood.y) ||
-          foods?.some(f => f.x === newFood.x && f.y === newFood.y)
-        );
+        } while (snake.some(part => part.x === newFood.x && part.y === newFood.y));
         return newFood;
       }
 
-      // ฟังก์ชันวาดงู (ลำตัวไร้รอยต่อแบบทรงกระบอก)
+      // วาดเส้นตาราง
+      function drawGrid() {
+        ctx.save();
+        ctx.strokeStyle = '#444';
+        ctx.lineWidth = 1;
+        for (let i = 1; i < tileCount; i++) {
+          ctx.beginPath();
+          ctx.moveTo(i * gridSize, 0);
+          ctx.lineTo(i * gridSize, canvas.height);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(0, i * gridSize);
+          ctx.lineTo(canvas.width, i * gridSize);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+
+      // วาดงูแบบลำตัวยาวไร้รอยต่อ + หัวยิ้ม
       function drawSnake() {
-        const bodyWidth = gridSize * 0.92;
-        // วาดลำตัวเป็นเส้นโค้งต่อเนื่อง
         if (snake.length > 1) {
           ctx.save();
           ctx.strokeStyle = '#7c5cff';
           ctx.lineCap = 'round';
           ctx.lineJoin = 'round';
-          ctx.lineWidth = bodyWidth;
+          ctx.lineWidth = gridSize * 0.9;
           ctx.globalAlpha = 0.97;
           ctx.beginPath();
           for (let i = 0; i < snake.length; i++) {
@@ -580,14 +267,14 @@
           ctx.globalAlpha = 1;
           ctx.restore();
         }
-        // วาดหัวงูทับ (กลม+ตา+ยิ้ม)
+        // วาดหัวงู (กลม+ตา+ยิ้ม)
         if (snake.length > 0) {
           const head = snake[0];
           const cx = head.x * gridSize + gridSize / 2;
           const cy = head.y * gridSize + gridSize / 2;
           ctx.save();
           ctx.beginPath();
-          ctx.arc(cx, cy, gridSize * 0.5, 0, Math.PI * 2);
+          ctx.arc(cx, cy, gridSize * 0.45, 0, Math.PI * 2);
           ctx.fillStyle = '#a78bfa';
           ctx.shadowColor = '#7c5cff';
           ctx.shadowBlur = 8;
@@ -609,16 +296,26 @@
         }
       }
 
-      // ฟังก์ชันวาดผลไม้ (กลมแดง+ใบไม้)
+      // วาดผลไม้แบบกลมสดใส
       function drawFood() {
-        const size = gridSize * 0.9;
-        for (const food of foods) {
-          const cx = food.x * gridSize + gridSize / 2;
-          const cy = food.y * gridSize + gridSize / 2;
-          ctx.save();
+        ctx.save();
+        for (const f of (window.foods || [food])) {
           ctx.beginPath();
-          ctx.arc(cx, cy, size / 2, 0, Math.PI * 2);
-          const grad = ctx.createRadialGradient(cx, cy, size/6, cx, cy, size/2);
+          ctx.arc(
+            f.x * gridSize + gridSize / 2,
+            f.y * gridSize + gridSize / 2,
+            gridSize * 0.42,
+            0,
+            Math.PI * 2
+          );
+          const grad = ctx.createRadialGradient(
+            f.x * gridSize + gridSize / 2,
+            f.y * gridSize + gridSize / 2,
+            gridSize * 0.1,
+            f.x * gridSize + gridSize / 2,
+            f.y * gridSize + gridSize / 2,
+            gridSize * 0.42
+          );
           grad.addColorStop(0, '#fff1f2');
           grad.addColorStop(0.5, '#fb7185');
           grad.addColorStop(1, '#be123c');
@@ -627,23 +324,18 @@
           ctx.shadowBlur = 8;
           ctx.fill();
           ctx.shadowBlur = 0;
-          ctx.beginPath();
-          ctx.ellipse(cx - 4, cy - size/2 + 6, 6, 2.5, -0.5, 0, Math.PI * 2);
-          ctx.fillStyle = '#22c55e';
-          ctx.fill();
-          ctx.restore();
         }
+        ctx.restore();
       }
 
-      // ฟังก์ชันเคลื่อนที่งู (ทีละช่อง)
+      // ฟังก์ชันเคลื่อนที่งู
       function moveSnake() {
-        if (dx === 0 && dy === 0) return;
         const head = { x: snake[0].x + dx, y: snake[0].y + dy };
         snake.unshift(head);
         let ate = false;
         for (let i = 0; i < foods.length; i++) {
           if (head.x === foods[i].x && head.y === foods[i].y) {
-            score += 1;
+            score += 10;
             scoreElement.textContent = score;
             foods[i] = randomFood();
             ate = true;
@@ -653,41 +345,6 @@
         if (!ate) {
           snake.pop();
         }
-      }
-      // --- UI: ปรับความเร็วและจำนวนผลไม้ ---
-      document.addEventListener('DOMContentLoaded', () => {
-        const speedInput = document.getElementById('speedInput');
-        const speedValue = document.getElementById('speedValue');
-        const foodInput = document.getElementById('foodInput');
-        speedInput.addEventListener('input', () => {
-          moveInterval = parseInt(speedInput.value);
-          speedValue.textContent = '';
-        });
-        foodInput.addEventListener('input', () => {
-          let val = parseInt(foodInput.value);
-          if (isNaN(val) || val < 1) val = 1;
-          if (val > 10) val = 10;
-          foodCount = val;
-        });
-        // sync initial value
-        speedValue.textContent = '';
-        foodCount = parseInt(foodInput.value);
-      });
-
-      // ฟังก์ชันสร้างตำแหน่งระหว่างช่อง (interpolate)
-      function getInterpolatedSnake(progress) {
-        // progress: 0 (old pos) -> 1 (new pos)
-        const interp = [];
-        for (let i = 0; i < snake.length - 1; i++) {
-          const a = snake[i];
-          const b = snake[i + 1];
-          interp.push({
-            x: a.x * progress + b.x * (1 - progress),
-            y: a.y * progress + b.y * (1 - progress)
-          });
-        }
-        interp.push(snake[snake.length - 1]);
-        return interp;
       }
 
       // ฟังก์ชันตรวจสอบการชน
@@ -705,140 +362,33 @@
         return false;
       }
 
-      // ฟังก์ชันวาดและอัปเดตเกม
-        // ฟังก์ชันวาดเส้นตาราง
-        function drawGrid() {
-          ctx.save();
-          ctx.strokeStyle = '#444';
-          ctx.lineWidth = 1;
-          for (let i = 1; i < tileCount; i++) {
-            // เส้นแนวตั้ง
-            ctx.beginPath();
-            ctx.moveTo(i * gridSize, 0);
-            ctx.lineTo(i * gridSize, canvas.height);
-            ctx.stroke();
-            // เส้นแนวนอน
-            ctx.beginPath();
-            ctx.moveTo(0, i * gridSize);
-            ctx.lineTo(canvas.width, i * gridSize);
-            ctx.stroke();
-          }
-          ctx.restore();
+      // ปรับ drawGame ให้เรียก drawGrid, drawFood, drawSnake
+      function drawGame() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawGrid();
+        moveSnake();
+        if (checkCollision()) {
+          endGame();
+          return;
         }
+        drawFood();
+        drawSnake();
+      }
 
-        // ฟังก์ชันวาดและอัปเดตเกม (อนิเมชันลื่นไหล)
-        function drawGame(progress) {
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          drawGrid();
-          if (checkCollision()) {
-            endGame();
-            return;
-          }
-          drawFood();
-          // วาดงูด้วยตำแหน่ง interpolate
-          const interpSnake = getInterpolatedSnake(progress);
-          drawSnake(interpSnake);
-        }
-
-      // ลูปหลักของเกม (อนิเมชันลื่นไหล)
+      // ลูปหลักของเกม
       function gameLoop(timestamp) {
         if (!isGameRunning) return;
         if (isPaused) {
           requestAnimationFrame(gameLoop);
           return;
         }
-        if (!lastUpdateTime) lastUpdateTime = timestamp;
-        let delta = timestamp - lastUpdateTime;
-        lastUpdateTime = timestamp;
-        moveTimer += delta;
-        let moved = false;
-        while (moveTimer >= moveInterval) {
-          moveSnake();
-          moveTimer -= moveInterval;
-          moved = true;
+        const delta = timestamp - lastUpdateTime;
+        if (delta > frameInterval) {
+          drawGame();
+          lastUpdateTime = timestamp;
         }
-        animProgress = moveTimer / moveInterval;
-        if (moved) animProgress = 0;
-        drawGame(animProgress);
         requestAnimationFrame(gameLoop);
       }
-      // --- UI: ปรับความเร็วและจำนวนผลไม้ + ปุ่มหยุด ---
-      document.addEventListener('DOMContentLoaded', () => {
-        // ปุ่มตั้งค่า (เฟือง) เปิด/ปิด popup
-        const settingsBtn = document.getElementById('settingsBtn');
-        const settingsModal = document.getElementById('settingsModal');
-        const closeSettings = document.getElementById('closeSettings');
-        settingsBtn.addEventListener('click', () => {
-          settingsModal.style.display = 'flex';
-        });
-        closeSettings.addEventListener('click', () => {
-          settingsModal.style.display = 'none';
-        });
-        settingsModal.addEventListener('click', (e) => {
-          if (e.target === settingsModal) settingsModal.style.display = 'none';
-        });
-
-        // input speed/food ใน popup
-        const speedInput = document.getElementById('speedInput');
-        const speedValue = document.getElementById('speedValue');
-        const foodInput = document.getElementById('foodInput');
-        const speedDown = document.getElementById('speedDown');
-        const speedUp = document.getElementById('speedUp');
-        const foodDown = document.getElementById('foodDown');
-        const foodUp = document.getElementById('foodUp');
-        speedInput.addEventListener('input', () => {
-          moveInterval = parseInt(speedInput.value);
-          speedValue.textContent = '';
-        });
-        foodInput.addEventListener('input', () => {
-          let val = parseInt(foodInput.value);
-          if (isNaN(val) || val < 1) val = 1;
-          if (val > 10) val = 10;
-          foodCount = val;
-        });
-        speedDown.addEventListener('click', () => {
-          let v = parseInt(speedInput.value) - 10;
-          if (v < 50) v = 50;
-          speedInput.value = v;
-          moveInterval = v;
-          speedValue.textContent = '';
-        });
-        speedUp.addEventListener('click', () => {
-          let v = parseInt(speedInput.value) + 10;
-          if (v > 500) v = 500;
-          speedInput.value = v;
-          moveInterval = v;
-          speedValue.textContent = '';
-        });
-        foodDown.addEventListener('click', () => {
-          let v = parseInt(foodInput.value) - 1;
-          if (v < 1) v = 1;
-          foodInput.value = v;
-          foodCount = v;
-        });
-        foodUp.addEventListener('click', () => {
-          let v = parseInt(foodInput.value) + 1;
-          if (v > 10) v = 10;
-          foodInput.value = v;
-          foodCount = v;
-        });
-        // sync initial value
-        speedValue.textContent = '';
-        foodCount = parseInt(foodInput.value);
-
-        // ปุ่มหยุด/เล่นต่อ (resume กลับมาเล่นต่อปกติ ไม่จบเกม)
-        pauseBtn.addEventListener('click', () => {
-          if (!isPaused) {
-            setPause(true);
-          } else {
-            setPause(false);
-            // ปรับ lastUpdateTime ให้เท่ากับเวลาปัจจุบัน เพื่อไม่ให้ขยับทันทีหลัง resume
-            lastUpdateTime = performance.now();
-          }
-        });
-        // ไม่ต้องเปิด settings modal อัตโนมัติ
-        // settingsModal.style.display = 'flex'; // ลบหรือคอมเมนต์บรรทัดนี้ออก
-      });
 
       // ฟังก์ชันเริ่มเกม
       function startGame() {
@@ -854,6 +404,28 @@
         gameOverElement.style.display = 'block';
       }
 
+      let isPaused = false;
+      function setPause(paused) {
+        isPaused = paused;
+        const pauseBtn = document.getElementById('pauseBtn');
+        if (pauseBtn) {
+          pauseBtn.textContent = isPaused ? '▶️' : '⏸️';
+        }
+      }
+      document.addEventListener('DOMContentLoaded', () => {
+        const pauseBtn = document.getElementById('pauseBtn');
+        if (pauseBtn) {
+          pauseBtn.addEventListener('click', () => {
+            setPause(!isPaused);
+            if (!isPaused) {
+              // resume
+              lastUpdateTime = performance.now();
+              requestAnimationFrame(gameLoop);
+            }
+          });
+        }
+      });
+
       // การควบคุมด้วยคีย์บอร์ด
       document.addEventListener('keydown', e => {
         if (e.key === 'ArrowUp' && dy !== 1) { dx = 0; dy = -1; }
@@ -868,39 +440,42 @@
       document.getElementById('left').addEventListener('touchstart', (e) => { e.preventDefault(); if (dx !== 1) { dx = -1; dy = 0; } });
       document.getElementById('right').addEventListener('touchstart', (e) => { e.preventDefault(); if (dx !== -1) { dx = 1; dy = 0; } });
 
-      startGame();
-        // ป้องกันการ scroll หน้าจอด้วยคีย์บอร์ด (arrow, space, page)
-        window.addEventListener('keydown', function(e) {
-          // ป้องกัน scroll ด้วยปุ่มลูกศร, space, pageup/down, home/end
-          const keys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' ', 'Spacebar', 'PageUp', 'PageDown', 'Home', 'End'];
-          if (keys.includes(e.key)) {
-            e.preventDefault();
-          }
-        }, { passive: false });
-
-        // ป้องกันการ scroll ด้วยการสัมผัสหน้าจอ (touchmove)
-        window.addEventListener('touchmove', function(e) {
-          e.preventDefault();
-        }, { passive: false });
-
       document.addEventListener('DOMContentLoaded', () => {
-        // ปุ่มเปลี่ยนโหมด PC/มือถือ
-        const modeBtn = document.getElementById('modeBtn');
-        const modeIcon = document.getElementById('modeIcon');
-        const modeText = document.getElementById('modeText');
-        let isPCMode = false;
-        modeBtn.addEventListener('click', () => {
-          isPCMode = !isPCMode;
-          document.body.classList.toggle('pc-mode', isPCMode);
-          if (isPCMode) {
-            modeIcon.textContent = '💻';
-            modeText.textContent = 'PC';
-          } else {
-            modeIcon.textContent = '📱';
-            modeText.textContent = 'Mobile';
-          }
+        const settingsBtn = document.getElementById('settingsBtn');
+        const settingsModal = document.getElementById('settingsModal');
+        const closeSettings = document.getElementById('closeSettings');
+        const speedInput = document.getElementById('speedInput');
+        const foodInput = document.getElementById('foodInput');
+        settingsBtn.addEventListener('click', () => {
+          settingsModal.style.display = 'flex';
+          speedInput.value = frameInterval;
+          foodInput.value = window.foodCountSetting || 1;
         });
+        closeSettings.addEventListener('click', () => {
+          settingsModal.style.display = 'none';
+        });
+        settingsModal.addEventListener('click', (e) => {
+          if (e.target === settingsModal) settingsModal.style.display = 'none';
+        });
+        speedInput.addEventListener('input', () => {
+          let v = parseInt(speedInput.value);
+          if (isNaN(v) || v < 50) v = 50;
+          if (v > 500) v = 500;
+          speedInput.value = v;
+          window.frameInterval = v;
+        });
+        foodInput.addEventListener('input', () => {
+          let v = parseInt(foodInput.value);
+          if (isNaN(v) || v < 1) v = 1;
+          if (v > 10) v = 10;
+          foodInput.value = v;
+          window.foodCountSetting = v;
+        });
+        // sync foodCount with game logic
+        window.foodCountSetting = 1;
       });
+
+      startGame();
     </script>
   </body>
 </html>
