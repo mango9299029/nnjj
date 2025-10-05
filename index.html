@@ -181,22 +181,22 @@
       }
 
       .dpad {
-  position: fixed;
-  left: 50%;
-  transform: translateX(-50%);
-  bottom: 0;
-  z-index: 1001;
-  display: grid;
-  grid-template-columns: 60px 60px 60px;
-  grid-template-rows: 60px 60px 60px;
-  justify-content: center;
-  gap: 6px;
-  background: #23243aee;
-  border-radius: 22px 22px 0 0;
-  padding: 14px 8px 10px 8px;
-  margin: 0;
-  max-width: 220px;
-  width: 100vw;
+        position: fixed;
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: 0;
+        z-index: 1001;
+        display: grid;
+        grid-template-columns: repeat(3, clamp(40px, 18vw, 64px));
+        grid-template-rows: repeat(3, clamp(40px, 18vw, 64px));
+        justify-content: center;
+        gap: clamp(4px, 2vw, 12px);
+        background: #23243aee;
+        border-radius: 22px 22px 0 0;
+        padding: clamp(8px, 2vw, 18px) clamp(4px, 2vw, 12px) clamp(8px, 2vw, 14px) clamp(4px, 2vw, 12px);
+        margin: 0;
+        max-width: 98vw;
+        width: auto;
       }
       }
       @media (max-width: 600px) {
@@ -230,23 +230,23 @@
       }
 
       .dpad button {
-  width: 60px;
-  height: 60px;
-  font-size: 24px;
-  border-radius: 12px;
-  padding: 0;
-  border: none;
-  box-shadow: none;
+        width: clamp(40px, 18vw, 64px);
+        height: clamp(40px, 18vw, 64px);
+        font-size: clamp(18px, 6vw, 28px);
+        border-radius: clamp(10px, 4vw, 18px);
+        padding: 0;
+        border: none;
+        box-shadow: none;
+        background: var(--btn-bg);
+        color: var(--text-light);
+        transition: background 0.18s, color 0.18s, transform 0.12s;
       }
-      @media (max-width: 480px) {
-        .dpad button {
-          width: 50px;
-          height: 50px;
-          font-size: 20px;
-          border: none;
-          box-shadow: none;
-        }
+      .dpad button:active {
+        background: var(--btn-hover);
+        color: #fff;
+        transform: scale(0.96);
       }
+      /* No need for extra dpad button rules, clamp() handles all sizes */
       }
 
       .dpad .empty {
