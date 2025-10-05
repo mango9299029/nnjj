@@ -195,8 +195,8 @@
       @media (max-width: 600px) {
         .dpad {
           position: fixed;
-          left: 0;
-          right: 0;
+          left: 50%;
+          transform: translateX(-50%);
           bottom: 0;
           z-index: 1001;
           background: #23243aee;
@@ -204,6 +204,18 @@
           margin: 0;
           box-shadow: 0 -2px 16px #0008;
           border-radius: 0 0 18px 18px;
+          display: grid;
+          grid-template-columns: 64px 64px 64px;
+          grid-template-rows: 64px 64px 64px;
+          max-width: 210px;
+          width: 100vw;
+          justify-content: center;
+        }
+        .dpad button {
+          width: 64px;
+          height: 64px;
+          font-size: 2.2rem;
+          border-radius: 18px;
         }
         .game-container {
           padding-bottom: 120px !important;
