@@ -192,6 +192,23 @@
         margin-left: auto;
         margin-right: auto;
       }
+      @media (max-width: 600px) {
+        .dpad {
+          position: fixed;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          z-index: 1001;
+          background: #23243aee;
+          padding: 8px 0 12px 0;
+          margin: 0;
+          box-shadow: 0 -2px 16px #0008;
+          border-radius: 0 0 18px 18px;
+        }
+        .game-container {
+          padding-bottom: 120px !important;
+        }
+      }
 
       .dpad button {
         width: 54px;
@@ -265,11 +282,55 @@
           max-width: 210px;
         }
         .dpad button {
-          width: 64px;
-          height: 64px;
-          font-size: 32px;
-          border-radius: 16px;
+          width: 128px;
+          height: 128px;
+          font-size: 64px;
+          border-radius: 32px;
         }
+      }
+      body.pc-mode {
+        touch-action: auto;
+        overscroll-behavior: auto;
+      }
+      body.pc-mode .game-container {
+        max-width: 480px;
+        padding: 25px 30px;
+      }
+      body.pc-mode .controls {
+        gap: 12px;
+        padding: 16px 10px 10px 10px;
+      }
+      body.pc-mode .controls label {
+        font-size: 1.05rem;
+        padding: 4px 8px;
+      }
+      body.pc-mode .controls input[type="range"] {
+        width: 90px;
+      }
+      body.pc-mode .controls input[type="number"] {
+        width: 54px;
+        font-size: 1rem;
+      }
+      body.pc-mode .controls .step-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 1.2rem;
+      }
+      body.pc-mode .controls button {
+        min-width: 44px;
+        min-height: 44px;
+        font-size: 1.1rem;
+      }
+      body.pc-mode .dpad {
+        grid-template-columns: 60px 60px 60px;
+        grid-template-rows: 60px 60px 60px;
+        max-width: 170px;
+      }
+      body.pc-mode .dpad button {
+        width: 60px;
+        height: 60px;
+        font-size: 24px;
+        border-radius: 12px;
       }
     </style>
   </head>
@@ -282,6 +343,9 @@
         <span id="settingsIcon">⚙️</span>
       </button>
       <div class="controls" id="controlsBar" style="transition:opacity 0.2s;">
+        <button id="modeBtn" title="เปลี่ยนโหมด" style="background:#222;color:#fff;min-width:54px;">
+          <span id="modeIcon">📱</span> <span id="modeText">Mobile</span>
+        </button>
         <button id="pauseBtn" title="หยุด/เล่นต่อ" style="background:var(--accent);color:#fff;">
           <span id="pauseIcon">⏸️</span>
         </button>
@@ -342,7 +406,7 @@
       }
       </style>
 
-      <div class="dpad">
+  <div class="dpad">
         <div class="empty"></div>
         <button id="up">⬆️</button>
         <div class="empty"></div>
@@ -354,12 +418,12 @@
         <div class="empty"></div>
       </div>
 
-      <div class="game-over" id="gameOver">
+  <div class="game-over" id="gameOver">
         <h2>กาก💩</h2>
         <p>คะแนนของคุณ: <span id="finalScore">0</span></p>
         <button onclick="startGame()">เล่นอีกครั้ง</button>
       </div>
-    </div>
+  </div>
 
     <script>
       const canvas = document.getElementById('gameCanvas');
@@ -701,6 +765,8 @@
             lastUpdateTime = performance.now();
           }
         });
+        // ไม่ต้องเปิด settings modal อัตโนมัติ
+        // settingsModal.style.display = 'flex'; // ลบหรือคอมเมนต์บรรทัดนี้ออก
       });
 
       // ฟังก์ชันเริ่มเกม
@@ -745,6 +811,25 @@
         window.addEventListener('touchmove', function(e) {
           e.preventDefault();
         }, { passive: false });
+
+      document.addEventListener('DOMContentLoaded', () => {
+        // ปุ่มเปลี่ยนโหมด PC/มือถือ
+        const modeBtn = document.getElementById('modeBtn');
+        const modeIcon = document.getElementById('modeIcon');
+        const modeText = document.getElementById('modeText');
+        let isPCMode = false;
+        modeBtn.addEventListener('click', () => {
+          isPCMode = !isPCMode;
+          document.body.classList.toggle('pc-mode', isPCMode);
+          if (isPCMode) {
+            modeIcon.textContent = '💻';
+            modeText.textContent = 'PC';
+          } else {
+            modeIcon.textContent = '📱';
+            modeText.textContent = 'Mobile';
+          }
+        });
+      });
     </script>
   </body>
 </html>
