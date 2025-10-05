@@ -1,10 +1,9 @@
-
 <!doctype html>
 <html lang="th">
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-		<title>เกมงู</title>
+		<title>เกมงูmango</title>
 
 		<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet" />
 
@@ -41,6 +40,7 @@
 				padding: 25px 30px;
 				box-shadow: 0 10px 30px var(--shadow);
 				position: relative;
+				z-index: 0;
 			}
 			.score {
 				font-size: 22px;
@@ -102,7 +102,7 @@
 			}
 			.game-over {
 				display: none;
-				position: absolute;
+				position: fixed;
 				top: 50%;
 				left: 50%;
 				transform: translate(-50%, -50%);
@@ -110,7 +110,49 @@
 				padding: 30px;
 				border-radius: 15px;
 				text-align: center;
+				z-index: 3000;
 			}
+			#leaderboard-ui {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    z-index: 20;
+    background: #181828ee;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px #0003;
+    padding: 10px 16px 10px 16px;
+    min-width: 120px;
+    max-width: 220px;
+    font-size: 0.98rem;
+    color: #fff;
+    opacity: 0.97;
+    transition: opacity 0.2s;
+  }
+  #leaderboard-ui h4 {
+    margin: 0 0 6px 0;
+    font-size: 1.02em;
+    color: #a78bfa;
+    letter-spacing: 0.5px;
+    text-align: left;
+    font-weight: 600;
+  }
+  #leaderboard-ui table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.97em;
+  }
+  #leaderboard-ui th, #leaderboard-ui td {
+    padding: 2px 4px;
+    text-align: center;
+  }
+  #leaderboard-ui th {
+    color: #a78bfa;
+    font-weight: 500;
+    font-size: 0.97em;
+  }
+  #leaderboard-ui tr:nth-child(even) td {
+    background: #23243a44;
+  }
 			@media (max-width: 480px) {
 				.dpad button {
 					width: 50px;
@@ -122,7 +164,10 @@
 	</head>
 	<body>
 		<div class="game-container">
-			<div class="score">คะแนน: <span id="score">0</span></div>
+			<div class="score" style="display:flex;align-items:center;gap:0.5em;justify-content:center;">
+				<span id="gameTime" style="font-size:16px;color:#fff;opacity:0.7;min-width:48px;text-align:right;">0.0s</span>
+				<span style="flex-shrink:0;">คะแนน: <span id="score">0</span></span>
+			</div>
 			<canvas id="gameCanvas" width="390" height="390"></canvas>
 			<div class="controls">
 				<button id="pauseBtn" style="background:#a78bfa;color:#222;min-width:44px;">⏸️</button>
@@ -142,27 +187,53 @@
 			<div class="game-over" id="gameOver">
 				<h2>จบเกม!</h2>
 				<p>คะแนนของคุณ: <span id="finalScore">0</span></p>
+				<p>ใช้เวลา: <span id="finalTime">0.0</span> วินาที</p>
 				<button onclick="startGame()">เล่นอีกครั้ง</button>
 			</div>
 			<button id="settingsBtn" title="ตั้งค่า" style="position:absolute;top:10px;right:10px;z-index:10;background:#222;color:#fff;border-radius:50%;width:44px;height:44px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;box-shadow:0 2px 8px #7c5cff44;border:none;cursor:pointer;">
 				<span>⚙️</span>
 			</button>
-			<div id="settingsModal" style="display:none;position:fixed;z-index:1000;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.25);backdrop-filter:blur(2.5px);display:flex;justify-content:center;align-items:center;">
-				<div style="background:#23243a;padding:24px 4vw 20px 4vw;border-radius:18px;box-shadow:0 8px 32px #000a;min-width:0;max-width:99vw;width:100%;max-width:400px;position:relative;display:flex;flex-direction:column;align-items:center;">
-					<button id="closeSettings" style="position:absolute;top:12px;right:12px;background:none;border:none;color:#fff;font-size:1.5rem;cursor:pointer;">✖️</button>
-					<h3 style="color:#a78bfa;margin-bottom:20px;font-size:1.22rem;font-weight:600;letter-spacing:0.5px;text-align:center;width:100%;">ตั้งค่าเกม</h3>
-					<div style="display:flex;flex-direction:column;gap:18px;width:100%;max-width:340px;margin:0 auto;">
-						<div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:12px;background:#181828;border-radius:14px;padding:14px 12px;box-sizing:border-box;flex-wrap:wrap;">
-							<span style="color:#fff;font-size:1.12rem;min-width:80px;text-align:left;">ความเร็ว</span>
-							<input id="speedInput" type="number" min="50" max="500" value="200" step="10" style="width:60px;font-size:1.12rem;text-align:center;box-sizing:border-box;background:#23243a;border:none;color:#fff;border-radius:8px;padding:4px 8px;">
-						</div>
-						<div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:12px;background:#181828;border-radius:14px;padding:14px 12px;box-sizing:border-box;flex-wrap:wrap;">
-							<span style="color:#fff;font-size:1.12rem;min-width:80px;text-align:left;">จำนวนผลไม้</span>
-							<input id="foodInput" type="number" min="1" max="10" value="1" style="width:60px;font-size:1.12rem;text-align:center;box-sizing:border-box;background:#23243a;border:none;color:#fff;border-radius:8px;padding:4px 8px;">
-						</div>
-					</div>
-				</div>
-			</div>
+			<div id="settingsModal" style="display:none;position:fixed;z-index:1000;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.25);backdrop-filter:blur(2.5px);justify-content:center;align-items:center;">
+  <div style="background:#23243a;padding:24px 4vw 20px 4vw;border-radius:18px;box-shadow:0 8px 32px #000a;min-width:0;max-width:99vw;width:100%;max-width:400px;position:relative;display:flex;flex-direction:column;align-items:center;">
+    <button id="closeSettings" style="position:absolute;top:12px;right:12px;background:none;border:none;color:#fff;font-size:1.5rem;cursor:pointer;">✖️</button>
+    <h3 style="color:#a78bfa;margin-bottom:20px;font-size:1.22rem;font-weight:600;letter-spacing:0.5px;text-align:center;width:100%;">ตั้งค่าเกม</h3>
+    <div style="display:flex;flex-direction:column;gap:18px;width:100%;max-width:340px;margin:0 auto;">
+      <div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:12px;background:#181828;border-radius:14px;padding:14px 12px;box-sizing:border-box;flex-wrap:wrap;">
+        <span style="color:#fff;font-size:1.12rem;min-width:80px;text-align:left;">ความเร็ว</span>
+        <input id="speedInput" type="number" min="200" max="500" value="200" step="10" style="width:60px;font-size:1.12rem;text-align:center;box-sizing:border-box;background:#23243a;border:none;color:#fff;border-radius:8px;padding:4px 8px;">
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:12px;background:#181828;border-radius:14px;padding:14px 12px;box-sizing:border-box;flex-wrap:wrap;">
+        <span style="color:#fff;font-size:1.12rem;min-width:80px;text-align:left;">จำนวนผลไม้</span>
+        <input id="foodInput" type="number" min="3" max="10" value="3" style="width:60px;font-size:1.12rem;text-align:center;box-sizing:border-box;background:#23243a;border:none;color:#fff;border-radius:8px;padding:4px 8px;">
+      </div>
+    </div>
+  </div>
+</div>
+			<table id="leaderboard" style="width:100%;max-width:350px;margin:18px auto 0 auto;background:#181828;border-radius:12px;box-shadow:0 2px 8px #0002;font-size:1rem;display:none;">
+  <thead>
+    <tr style="color:#a78bfa;text-align:center;">
+      <th style="padding:7px 0;">#</th>
+      <th style="padding:7px 0;">คะแนน</th>
+      <th style="padding:7px 0;">เวลา (s)</th>
+    </tr>
+  </thead>
+  <tbody id="leaderboardBody"></tbody>
+</table>
+<button id="leaderboardBtn" title="ดูอันดับ" style="position:absolute;top:12px;left:12px;z-index:20;background:#222;color:#fff;border-radius:50%;width:44px;height:44px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;box-shadow:0 2px 8px #7c5cff44;border:none;cursor:pointer;">
+  <span>🏆</span>
+</button>
+<div id="leaderboardModal" style="display:none;position:fixed;z-index:1001;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.25);backdrop-filter:blur(2.5px);justify-content:center;align-items:center;">
+  <div style="background:#23243a;padding:24px 4vw 20px 4vw;border-radius:18px;box-shadow:0 8px 32px #000a;min-width:0;max-width:99vw;width:100%;max-width:400px;position:relative;display:flex;flex-direction:column;align-items:center;">
+    <button id="closeLeaderboard" style="position:absolute;top:12px;right:12px;background:none;border:none;color:#fff;font-size:1.5rem;cursor:pointer;">✖️</button>
+    <h3 style="color:#a78bfa;margin-bottom:20px;font-size:1.22rem;font-weight:600;letter-spacing:0.5px;text-align:center;width:100%;">อันดับสูงสุด</h3>
+    <table style="width:100%;border-collapse:collapse;font-size:1.08em;">
+      <thead>
+        <tr style="color:#a78bfa;text-align:center;"><th style="padding:7px 0;">#</th><th style="padding:7px 0;">คะแนน</th><th style="padding:7px 0;">เวลา (s)</th></tr>
+      </thead>
+      <tbody id="leaderboardModalBody"></tbody>
+    </table>
+  </div>
+</div>
 		</div>
 		<script>
 			const canvas = document.getElementById('gameCanvas');
@@ -174,6 +245,10 @@
 			const tileCount = canvas.width / gridSize;
 			let snake, food, dx, dy, score, isGameRunning, lastUpdateTime;
 			let frameInterval = 200;
+			let gameStartTime = 0;
+			let gameElapsed = 0;
+			let isSnakeMoving = false;
+			let pauseStart = 0;
 			function resetGame() {
 				snake = [{ x: Math.floor(tileCount / 2), y: Math.floor(tileCount / 2) }];
 				dx = 0;
@@ -182,21 +257,27 @@
 				scoreElement.textContent = score;
 				food = null;
 				foods = [];
-				let count = window.foodCountSetting || 1;
+				let count = Math.max(3, window.foodCountSetting || 1);
 				for (let i = 0; i < count; i++) {
 					foods.push(randomFood());
 				}
 				isGameRunning = true;
 				lastUpdateTime = 0;
+				gameStartTime = 0;
+				gameElapsed = 0;
+				isSnakeMoving = false;
+				document.getElementById('gameTime').textContent = '0.0s';
 			}
 			function randomFood() {
 				let newFood;
+				const scores = [10, 20, 30, 40, 50];
 				do {
 					newFood = {
 						x: Math.floor(Math.random() * tileCount),
-						y: Math.floor(Math.random() * tileCount)
+						y: Math.floor(Math.random() * tileCount),
+						score: scores[Math.floor(Math.random() * scores.length)]
 					};
-				} while (snake.some(part => part.x === newFood.x && part.y === newFood.y));
+				} while (snake.some(part => part.x === newFood.x && part.y === newFood.y) || (window.foods && window.foods.some(f => f.x === newFood.x && f.y === newFood.y)));
 				return newFood;
 			}
 			function drawGrid() {
@@ -216,6 +297,7 @@
 				ctx.restore();
 			}
 			function drawSnake() {
+				// Draw body
 				if (snake.length > 1) {
 					ctx.save();
 					ctx.strokeStyle = '#7c5cff';
@@ -224,24 +306,21 @@
 					ctx.lineWidth = gridSize * 0.9;
 					ctx.globalAlpha = 0.97;
 					ctx.beginPath();
-					for (let i = 0; i < snake.length; i++) {
+					ctx.moveTo(snake[0].x * gridSize + gridSize / 2, snake[0].y * gridSize + gridSize / 2);
+					for (let i = 1; i < snake.length; i++) {
 						const part = snake[i];
 						const cx = part.x * gridSize + gridSize / 2;
 						const cy = part.y * gridSize + gridSize / 2;
-						if (i === 0) {
-							ctx.moveTo(cx, cy);
-						} else {
-							ctx.lineTo(cx, cy);
-						}
+						// (ลบเอฟเฟกต์แฟลชออก)
+						ctx.lineTo(cx, cy);
 					}
 					ctx.stroke();
 					ctx.globalAlpha = 1;
 					ctx.restore();
 				}
 				if (snake.length > 0) {
-					const head = snake[0];
-					const cx = head.x * gridSize + gridSize / 2;
-					const cy = head.y * gridSize + gridSize / 2;
+					const cx = snake[0].x * gridSize + gridSize / 2;
+					const cy = snake[0].y * gridSize + gridSize / 2;
 					ctx.save();
 					ctx.beginPath();
 					ctx.arc(cx, cy, gridSize * 0.45, 0, Math.PI * 2);
@@ -266,40 +345,82 @@
 			function drawFood() {
 				ctx.save();
 				for (const f of (window.foods || [food])) {
+					const cx = f.x * gridSize + gridSize / 2;
+					const cy = f.y * gridSize + gridSize / 2;
+					// Color and gradient by score
+					let grad, shadow, mainColor;
+					if (f.score === 10) {
+						grad = ctx.createRadialGradient(cx-6, cy-6, gridSize*0.1, cx, cy, gridSize*0.42);
+						grad.addColorStop(0, '#fff1f2'); grad.addColorStop(0.4, '#fb7185'); grad.addColorStop(1, '#be123c');
+						shadow = '#fb7185'; mainColor = '#fb7185';
+					} else if (f.score === 20) {
+						grad = ctx.createRadialGradient(cx-6, cy-6, gridSize*0.1, cx, cy, gridSize*0.42);
+						grad.addColorStop(0, '#f0fff4'); grad.addColorStop(0.4, '#6ee7b7'); grad.addColorStop(1, '#059669');
+						shadow = '#6ee7b7'; mainColor = '#34d399';
+					} else if (f.score === 30) {
+						grad = ctx.createRadialGradient(cx-6, cy-6, gridSize*0.1, cx, cy, gridSize*0.42);
+						grad.addColorStop(0, '#fef9c3'); grad.addColorStop(0.4, '#fde047'); grad.addColorStop(1, '#f59e42');
+						shadow = '#fde047'; mainColor = '#fde047';
+					} else if (f.score === 40) {
+						grad = ctx.createRadialGradient(cx-6, cy-6, gridSize*0.1, cx, cy, gridSize*0.42);
+						grad.addColorStop(0, '#f3e8ff'); grad.addColorStop(0.4, '#a78bfa'); grad.addColorStop(1, '#7c3aed');
+						shadow = '#a78bfa'; mainColor = '#a78bfa';
+					} else {
+						grad = ctx.createRadialGradient(cx-6, cy-6, gridSize*0.1, cx, cy, gridSize*0.42);
+						grad.addColorStop(0, '#fef2f2'); grad.addColorStop(0.4, '#fca5a5'); grad.addColorStop(1, '#dc2626');
+						shadow = '#fca5a5'; mainColor = '#dc2626';
+					}
+					// Fruit body
+					ctx.save();
 					ctx.beginPath();
-					ctx.arc(
-						f.x * gridSize + gridSize / 2,
-						f.y * gridSize + gridSize / 2,
-						gridSize * 0.42,
-						0,
-						Math.PI * 2
-					);
-					const grad = ctx.createRadialGradient(
-						f.x * gridSize + gridSize / 2,
-						f.y * gridSize + gridSize / 2,
-						gridSize * 0.1,
-						f.x * gridSize + gridSize / 2,
-						f.y * gridSize + gridSize / 2,
-						gridSize * 0.42
-					);
-					grad.addColorStop(0, '#fff1f2');
-					grad.addColorStop(0.5, '#fb7185');
-					grad.addColorStop(1, '#be123c');
+					ctx.arc(cx, cy, gridSize * 0.42, 0, Math.PI * 2);
 					ctx.fillStyle = grad;
-					ctx.shadowColor = '#fb7185';
-					ctx.shadowBlur = 8;
+					ctx.shadowColor = shadow;
+					ctx.shadowBlur = 10;
 					ctx.fill();
 					ctx.shadowBlur = 0;
+					// Outline
+					ctx.beginPath();
+					ctx.arc(cx, cy, gridSize * 0.42, 0, Math.PI * 2);
+					ctx.lineWidth = 2.2;
+					ctx.strokeStyle = 'rgba(80,0,40,0.18)';
+					ctx.stroke();
+					// Leaf
+					ctx.save();
+					ctx.translate(cx, cy - gridSize * 0.32);
+					ctx.rotate(-0.3);
+					ctx.beginPath();
+					ctx.ellipse(0, 0, gridSize * 0.13, gridSize * 0.22, 0, 0, Math.PI * 2);
+					ctx.fillStyle = '#6ee7b7';
+					ctx.globalAlpha = 0.85;
+					ctx.fill();
+					ctx.restore();
+					// Highlight
+					ctx.beginPath();
+					ctx.ellipse(cx - gridSize * 0.13, cy - gridSize * 0.13, gridSize * 0.09, gridSize * 0.18, -0.7, 0, Math.PI * 2);
+					ctx.fillStyle = 'rgba(255,255,255,0.22)';
+					ctx.fill();
+					ctx.restore();
 				}
 				ctx.restore();
 			}
 			function moveSnake() {
+				if (!isSnakeMoving && (dx !== 0 || dy !== 0)) {
+					isSnakeMoving = true;
+					gameStartTime = Date.now();
+				}
+				if (isSnakeMoving) {
+					// อัปเดตเวลาที่เดินจริง
+					gameElapsed += (Date.now() - gameStartTime) / 1000;
+					gameStartTime = Date.now();
+				}
 				const head = { x: snake[0].x + dx, y: snake[0].y + dy };
 				snake.unshift(head);
 				let ate = false;
 				for (let i = 0; i < foods.length; i++) {
 					if (head.x === foods[i].x && head.y === foods[i].y) {
-						score += 10;
+						const fruitScore = foods[i].score || 10;
+						score += fruitScore;
 						scoreElement.textContent = score;
 						foods[i] = randomFood();
 						ate = true;
@@ -326,35 +447,95 @@
 			function drawGame() {
 				ctx.clearRect(0, 0, canvas.width, canvas.height);
 				drawGrid();
-				moveSnake();
-				if (checkCollision()) {
-					endGame();
-					return;
-				}
 				drawFood();
 				drawSnake();
 			}
+			function updateGameTime() {
+    if (!isGameRunning) return;
+    let t = gameElapsed;
+    if (isSnakeMoving && !isPaused && gameStartTime) {
+        t += (Date.now() - gameStartTime) / 1000;
+    }
+    document.getElementById('gameTime').textContent = t.toFixed(1) + 's';
+}
 			function gameLoop(timestamp) {
 				if (!isGameRunning) return;
 				if (isPaused) {
+					updateGameTime();
 					requestAnimationFrame(gameLoop);
 					return;
 				}
 				const delta = timestamp - lastUpdateTime;
 				if (delta > frameInterval) {
-					drawGame();
+					moveSnake();
+					if (checkCollision()) {
+						endGame();
+						return;
+					}
 					lastUpdateTime = timestamp;
 				}
+				updateGameTime();
+				drawGame();
 				requestAnimationFrame(gameLoop);
 			}
 			function startGame() {
 				resetGame();
 				gameOverElement.style.display = 'none';
+				isSnakeMoving = false;
 				requestAnimationFrame(gameLoop);
 			}
+			function saveToLeaderboard(score, time) {
+    let data = JSON.parse(localStorage.getItem('snakeLeaderboard') || '[]');
+    data.push({score, time});
+    // เรียงจากคะแนนมากไปน้อย ถ้าคะแนนเท่ากันเรียงเวลาน้อยก่อน
+    data.sort((a, b) => b.score - a.score || a.time - b.time);
+    data = data.slice(0, 10); // top 10
+    localStorage.setItem('snakeLeaderboard', JSON.stringify(data));
+}
+function renderLeaderboard() {
+    let data = JSON.parse(localStorage.getItem('snakeLeaderboard') || '[]');
+    const tbody = document.getElementById('leaderboardBody');
+    tbody.innerHTML = '';
+    data.forEach((row, i) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td style='text-align:center;'>${i+1}</td><td style='text-align:center;'>${row.score}</td><td style='text-align:center;'>${row.time.toFixed(1)}</td>`;
+        tbody.appendChild(tr);
+    });
+    document.getElementById('leaderboard').style.display = data.length ? '' : 'none';
+}
+function renderLeaderboardUI() {
+    let data = JSON.parse(localStorage.getItem('snakeLeaderboard') || '[]');
+    const tbody = document.getElementById('leaderboardUiBody');
+    tbody.innerHTML = '';
+    data.forEach((row, i) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${i+1}</td><td>${row.score}</td><td>${row.time.toFixed(1)}</td>`;
+        tbody.appendChild(tr);
+    });
+    document.getElementById('leaderboard-ui').style.display = data.length ? '' : 'none';
+}
+function renderLeaderboardModal() {
+    let data = JSON.parse(localStorage.getItem('snakeLeaderboard') || '[]');
+    const tbody = document.getElementById('leaderboardModalBody');
+    tbody.innerHTML = '';
+    data.forEach((row, i) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td style='text-align:center;'>${i+1}</td><td style='text-align:center;'>${row.score}</td><td style='text-align:center;'>${row.time.toFixed(1)}</td>`;
+        tbody.appendChild(tr);
+    });
+}
 			function endGame() {
 				isGameRunning = false;
 				finalScore.textContent = score;
+				// เวลารวมที่เดินจริง
+				let t = gameElapsed;
+				if (isSnakeMoving && !isPaused && gameStartTime) {
+					t += (Date.now() - gameStartTime) / 1000;
+				}
+				document.getElementById('finalTime').textContent = t.toFixed(1);
+				saveToLeaderboard(score, t);
+				renderLeaderboard();
+				renderLeaderboardUI();
 				gameOverElement.style.display = 'block';
 			}
 			let isPaused = false;
@@ -363,6 +544,16 @@
 				const pauseBtn = document.getElementById('pauseBtn');
 				if (pauseBtn) {
 					pauseBtn.textContent = isPaused ? '▶️' : '⏸️';
+				}
+				if (isPaused) {
+					// กดหยุด: บันทึกเวลาที่หยุด
+					pauseStart = Date.now();
+				} else {
+					// กดเล่นต่อ: เพิ่มเวลาที่เดินจริง
+					if (pauseStart) {
+						gameStartTime += Date.now() - pauseStart;
+						pauseStart = 0;
+					}
 				}
 			}
 			document.addEventListener('DOMContentLoaded', () => {
@@ -378,15 +569,19 @@
 				}
 			});
 			document.addEventListener('keydown', e => {
-				if (e.key === 'ArrowUp' && dy !== 1) { dx = 0; dy = -1; }
-				if (e.key === 'ArrowDown' && dy !== -1) { dx = 0; dy = 1; }
-				if (e.key === 'ArrowLeft' && dx !== 1) { dx = -1; dy = 0; }
-				if (e.key === 'ArrowRight' && dx !== -1) { dx = 1; dy = 0; }
-			});
-			document.getElementById('up').addEventListener('touchstart', (e) => { e.preventDefault(); if (dy !== 1) { dx = 0; dy = -1; } });
-			document.getElementById('down').addEventListener('touchstart', (e) => { e.preventDefault(); if (dy !== -1) { dx = 0; dy = 1; } });
-			document.getElementById('left').addEventListener('touchstart', (e) => { e.preventDefault(); if (dx !== 1) { dx = -1; dy = 0; } });
-			document.getElementById('right').addEventListener('touchstart', (e) => { e.preventDefault(); if (dx !== -1) { dx = 1; dy = 0; } });
+    // Prevent arrow keys from scrolling the page, but allow mouse wheel
+    if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
+        e.preventDefault();
+    }
+    if (e.key === 'ArrowUp' && dy !== 1) { setDirection(0, -1); }
+    if (e.key === 'ArrowDown' && dy !== -1) { setDirection(0, 1); }
+    if (e.key === 'ArrowLeft' && dx !== 1) { setDirection(-1, 0); }
+    if (e.key === 'ArrowRight' && dx !== -1) { setDirection(1, 0); }
+});
+			document.getElementById('up').addEventListener('touchstart', (e) => { e.preventDefault(); if (dy !== 1) { setDirection(0, -1); } });
+			document.getElementById('down').addEventListener('touchstart', (e) => { e.preventDefault(); if (dy !== -1) { setDirection(0, 1); } });
+			document.getElementById('left').addEventListener('touchstart', (e) => { e.preventDefault(); if (dx !== 1) { setDirection(-1, 0); } });
+			document.getElementById('right').addEventListener('touchstart', (e) => { e.preventDefault(); if (dx !== -1) { setDirection(1, 0); } });
 			document.addEventListener('DOMContentLoaded', () => {
 				const settingsBtn = document.getElementById('settingsBtn');
 				const settingsModal = document.getElementById('settingsModal');
@@ -427,6 +622,27 @@
 				window.foodCountSetting = 1;
 				frameInterval = parseInt(speedInput.value) || 200;
 			});
+			function setDirection(newDx, newDy) {
+    dx = newDx;
+    dy = newDy;
+}
+			document.addEventListener('DOMContentLoaded', () => {
+    const leaderboardBtn = document.getElementById('leaderboardBtn');
+    const leaderboardModal = document.getElementById('leaderboardModal');
+    const closeLeaderboard = document.getElementById('closeLeaderboard');
+    leaderboardBtn.addEventListener('click', () => {
+        renderLeaderboardModal();
+        leaderboardModal.style.display = 'flex';
+    });
+    closeLeaderboard.addEventListener('click', () => {
+        leaderboardModal.style.display = 'none';
+    });
+    leaderboardModal.addEventListener('click', (e) => {
+        if (e.target === leaderboardModal) leaderboardModal.style.display = 'none';
+    });
+});
+			window.addEventListener('DOMContentLoaded', renderLeaderboard);
+			window.addEventListener('DOMContentLoaded', renderLeaderboardUI);
 			startGame();
 		</script>
 	</body>
