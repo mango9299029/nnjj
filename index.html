@@ -8,6 +8,16 @@
 		<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet" />
 
 		<style>
+			/* Prevent text selection and copying */
+			body, .game-container, button, canvas, input {
+				user-select: none;
+				-webkit-user-select: none;
+				-ms-user-select: none;
+				-moz-user-select: none;
+			}
+			body {
+				-webkit-touch-callout: none;
+			}
 			:root {
 				--bg-dark: #121217;
 				--panel-dark: #1e1f29;
@@ -59,22 +69,26 @@
 			.controls {
 				margin-top: 24px;
 			}
-			button {
-				background: var(--btn-bg);
-				color: var(--text-light);
-				border: none;
-				padding: 18px 24px;
-				border-radius: 14px;
-				font-size: 1.4rem;
-				font-weight: 600;
-				cursor: pointer;
-				margin: 8px;
-				transition:
-					background 0.3s ease,
-					box-shadow 0.3s ease,
-					transform 0.15s ease;
-				box-shadow: 0 4px 8px var(--shadow);
-			}
+					button {
+						background: var(--btn-bg);
+						color: var(--text-light);
+						border: none;
+						padding: 18px 24px;
+						border-radius: 14px;
+						font-size: 1.4rem;
+						font-weight: 600;
+						cursor: pointer;
+						margin: 8px;
+						transition:
+							background 0.3s ease,
+							box-shadow 0.3s ease,
+							transform 0.15s ease;
+						box-shadow: 0 4px 8px var(--shadow);
+						user-select: none !important;
+						-webkit-user-select: none !important;
+						-moz-user-select: none !important;
+						-ms-user-select: none !important;
+					}
 			button:hover {
 				background: var(--btn-hover);
 				box-shadow: 0 6px 20px var(--shadow);
@@ -571,10 +585,20 @@ function renderLeaderboardModal() {
     if (e.key === 'ArrowLeft' && dx !== 1) { setDirection(-1, 0); }
     if (e.key === 'ArrowRight' && dx !== -1) { setDirection(1, 0); }
 });
-			document.getElementById('up').addEventListener('touchstart', (e) => { e.preventDefault(); if (dy !== 1) { setDirection(0, -1); } });
-			document.getElementById('down').addEventListener('touchstart', (e) => { e.preventDefault(); if (dy !== -1) { setDirection(0, 1); } });
-			document.getElementById('left').addEventListener('touchstart', (e) => { e.preventDefault(); if (dx !== 1) { setDirection(-1, 0); } });
-			document.getElementById('right').addEventListener('touchstart', (e) => { e.preventDefault(); if (dx !== -1) { setDirection(1, 0); } });
+					// Remove movement delay for both desktop and mobile
+					function handleDirection(dir) {
+						switch(dir) {
+							case 'up':    if (dy !== 1) setDirection(0, -1); break;
+							case 'down':  if (dy !== -1) setDirection(0, 1); break;
+							case 'left':  if (dx !== 1) setDirection(-1, 0); break;
+							case 'right': if (dx !== -1) setDirection(1, 0); break;
+						}
+					}
+					['up','down','left','right'].forEach(dir => {
+						const btn = document.getElementById(dir);
+						btn.addEventListener('touchstart', e => { e.preventDefault(); handleDirection(dir); });
+						btn.addEventListener('mousedown', e => { e.preventDefault(); handleDirection(dir); });
+					});
 			document.addEventListener('DOMContentLoaded', () => {
 				const settingsBtn = document.getElementById('settingsBtn');
 				const settingsModal = document.getElementById('settingsModal');
