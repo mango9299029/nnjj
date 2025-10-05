@@ -181,16 +181,23 @@
       }
 
       .dpad {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 0;
+  z-index: 1001;
   display: grid;
-  grid-template-columns: 54px 54px 54px;
-  grid-template-rows: 54px 54px 54px;
+  grid-template-columns: 60px 60px 60px;
+  grid-template-rows: 60px 60px 60px;
   justify-content: center;
-  gap: 4px;
-  margin-top: 12px;
-  width: 100%;
-  max-width: 170px;
-  margin-left: auto;
-  margin-right: auto;
+  gap: 6px;
+  background: #23243aee;
+  border-radius: 22px 22px 0 0;
+  padding: 14px 8px 10px 8px;
+  margin: 0;
+  max-width: 220px;
+  width: 100vw;
+      }
       }
       @media (max-width: 600px) {
         .dpad {
@@ -223,11 +230,23 @@
       }
 
       .dpad button {
-  width: 54px;
-  height: 54px;
-  font-size: 22px;
-  border-radius: 10px;
+  width: 60px;
+  height: 60px;
+  font-size: 24px;
+  border-radius: 12px;
   padding: 0;
+  border: none;
+  box-shadow: none;
+      }
+      @media (max-width: 480px) {
+        .dpad button {
+          width: 50px;
+          height: 50px;
+          font-size: 20px;
+          border: none;
+          box-shadow: none;
+        }
+      }
       }
 
       .dpad .empty {
@@ -240,26 +259,53 @@
           transform: translateX(-50%);
           bottom: 0;
           z-index: 1001;
-          background: #23243aee;
-          padding: 8px 0 12px 0;
+          background: rgba(44, 44, 60, 0.97);
+          border-radius: 22px 22px 0 0;
+          border: 2.5px solid var(--accent);
+          box-shadow: 0 -2px 24px #7c5cff33;
+          padding: 14px 8px 10px 8px;
           margin: 0;
-          box-shadow: 0 -2px 16px #0008;
-          border-radius: 0 0 18px 18px;
           display: grid;
           grid-template-columns: 60px 60px 60px;
           grid-template-rows: 60px 60px 60px;
-          max-width: 200px;
+          max-width: 220px;
           width: 100vw;
           justify-content: center;
         }
+        /* Remove any other .dpad rules in this media query to avoid conflicts */
         body:not(.pc-mode) .dpad button {
           width: 60px;
           height: 60px;
           font-size: 24px;
-          border-radius: 12px;
+          border-radius: 16px;
+          border: 2.5px solid var(--accent);
+          background: linear-gradient(145deg, #23243a 60%, #7c5cff22 100%);
+          box-shadow: 0 2px 10px #7c5cff22, 0 1.5px 0 #fff2 inset;
+          color: var(--text-light);
+          transition: background 0.18s, box-shadow 0.18s, border 0.18s, transform 0.12s;
+          font-weight: 600;
+          letter-spacing: 0.5px;
+          outline: none;
+          overflow: hidden;
+          user-select: none;
+          cursor: pointer;
+        }
+        body:not(.pc-mode) .dpad button:hover, body:not(.pc-mode) .dpad button:focus {
+          background: linear-gradient(145deg, #2a2c3d 60%, #a78bfa55 100%);
+          box-shadow: 0 4px 18px #7c5cff44, 0 2px 0 #fff2 inset;
+          border-color: #a78bfa;
+          color: #fff;
+          z-index: 2;
+        }
+        body:not(.pc-mode) .dpad button:active {
+          background: linear-gradient(145deg, #181828 60%, #7c5cff44 100%);
+          box-shadow: 0 1px 4px #7c5cff44, 0 1.5px 0 #fff2 inset;
+          border-color: #7c5cff;
+          color: #fff;
+          transform: scale(0.96);
         }
         body:not(.pc-mode) .game-container {
-          padding-bottom: 110px !important;
+          padding-bottom: 120px !important;
         }
       @media (max-width: 480px) {
         body:not(.pc-mode) .dpad {
@@ -271,6 +317,7 @@
           width: 50px;
           height: 50px;
           font-size: 20px;
+          border-radius: 12px;
         }
       }
           padding-right: 4vw;
